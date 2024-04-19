@@ -1,0 +1,9 @@
+application/config/config.php
+application/config/database.php
+application/config/constants.php
+application/logs/
+application/cache/
+application/vendor/*
+uploads/*
+modules/helpers/*
+modules/twilio-web/*

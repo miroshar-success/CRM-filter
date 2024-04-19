@@ -1,0 +1,54 @@
+/**
+ * Code Mirror editor CSS
+ */
+.code-mirror-buttons {
+  padding: 5px;
+  background: #f7f7f7;
+  border: 1px solid #eee;
+  border-bottom: none;
+}
+.code-mirror-before {
+  border: 1px solid #ddd;
+  border-bottom: none;
+  background-color: #f7f7f7;
+}
+.code-mirror-before div {
+  color: #8f8f8f;
+  margin-left: 29px;
+  border-left: 1px solid #ddd;
+  padding: 3px 8px;
+  background-color: #fff;
+}
+.code-mirror-after {
+  border: 1px solid #ddd;
+  border-top: none;
+  background-color: #f7f7f7;
+}
+.code-mirror-after div {
+  color: #8f8f8f;
+  margin-left: 29px;
+  border-left: 1px solid #ddd;
+  padding: 3px 8px;
+  background-color: #fff;
+}
+.CodeMirror {
+  margin-top: 0px;
+  border: 1px solid #ddd;
+  border-bottom: none;
+  border-top: none;
+}
+.code-mirror-buttons-custom {
+  border: 1px solid #ddd !important;
+  border-bottom: none !important;
+}
+
+/**
+ * General CSS
+ */
+.input_radio {
+  cursor: pointer;
+}
+
+.mirror-main-div {
+  border-bottom: 1px solid #eee !important;
+}
