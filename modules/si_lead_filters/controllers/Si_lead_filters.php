@@ -1,10 +1,10 @@
 <?php
 defined('BASEPATH') or exit('No direct script access allowed');
-class Si_lead_filters extends AdminController 
+class Si_lead_filters extends AdminController
 {
 	public function __construct()
 	{
-		parent::__construct(); 
+		parent::__construct();
 		$this->load->model('si_lead_filter_model');
 		$this->load->model('leads_model');
 		$this->load->model('currencies_model');
@@ -12,7 +12,7 @@ class Si_lead_filters extends AdminController
 			access_denied(_l('si_lead_filters'));
 		}
 	}
-	
+
 	private function get_where_report_period($field = 'date',$months_report='this_month')
 	{
 		$custom_date_select = '';
@@ -35,7 +35,7 @@ class Si_lead_filters extends AdminController
 			} elseif ($months_report == 'this_week') {
 				$custom_date_select = 'AND (' . $field . ' BETWEEN "' . date('Y-m-d', strtotime('monday this week')) . '" AND "' . date('Y-m-d', strtotime('sunday this week')) . '")';
 			} elseif ($months_report == 'last_week') {
-				$custom_date_select = 'AND (' . $field . ' BETWEEN "' . date('Y-m-d', strtotime('monday last week')) . '" AND "' . date('Y-m-d', strtotime('sunday last week')) . '")';	
+				$custom_date_select = 'AND (' . $field . ' BETWEEN "' . date('Y-m-d', strtotime('monday last week')) . '" AND "' . date('Y-m-d', strtotime('sunday last week')) . '")';
 			} elseif ($months_report == 'this_month') {
 				$custom_date_select = 'AND (' . $field . ' BETWEEN "' . date('Y-m-01') . '" AND "' . date('Y-m-t') . '")';
 			} elseif ($months_report == 'this_year') {
@@ -58,14 +58,14 @@ class Si_lead_filters extends AdminController
 				}
 			}
 		}
-		
+
 		 return $custom_date_select;
 	}
-	
+
 	public function leads_filter()
 	{
 		$overview = [];
-		
+
 		$saved_filter_name='';
 		$filter_id = $this->input->get('filter_id');
 		if($filter_id!='' && is_numeric($filter_id) && empty($this->input->post()))
@@ -75,8 +75,8 @@ class Si_lead_filters extends AdminController
 			{
 				$_POST = unserialize($filter_obj->filter_parameters);
 				$saved_filter_name = $filter_obj->filter_name;
-			}	
-		}	
+			}
+		}
 
 		$has_permission_view   = has_permission('leads', '', 'view');
 
@@ -92,7 +92,7 @@ class Si_lead_filters extends AdminController
 			$status=array('');
 		$source = $this->input->post('source');
 		if(empty($source))
-			$source=array('');	
+			$source=array('');
 		$tag = $this->input->post('tags');
 		if(empty($tag))
 			$tag=array('');
@@ -107,29 +107,29 @@ class Si_lead_filters extends AdminController
 			$state=array('');
 		$zip = $this->input->post('zips');
 		if(empty($zip))
-			$zip=array('');				
-		
-		$type = $this->input->post('type');	
-				
+			$zip=array('');
+
+		$type = $this->input->post('type');
+
 		$hide_columns = $this->input->post('hide_columns');
 		if(empty($hide_columns))
 			$hide_columns=array();
-			
+
 		if ($this->input->post('date_by')) {
 			$date_by = $this->input->post('date_by');
 		} else {
 			$date_by = 'dateadded';
 		}
-		
+
 		$fetch_month_from = $date_by;
-		
+
 		if ($this->input->post('report_months')!='')
 			$report_months = $this->input->post('report_months');
 		elseif($this->input->post('report_months')=='' && $filter_id=='' && $this->input->server('REQUEST_METHOD') !== 'POST')
 			$report_months = 'this_month';//by default when loaded
 		else
 			$report_months = '';
-		
+
 		$save_filter = $this->input->post('save_filter');
 		$filter_name='';
 		$current_user_id = get_staff_user_id();
@@ -146,7 +146,7 @@ class Si_lead_filters extends AdminController
 								 'staff_id'=>$current_user_id);
 			if($filter_id!='' && is_numeric($filter_id))
 				$this->si_lead_filter_model->update($filter_data,$filter_id);
-			else					 
+			else
 				$new_filter_id = $this->si_lead_filter_model->add($filter_data);
 		}
 
@@ -172,34 +172,32 @@ class Si_lead_filters extends AdminController
 		$data['zips']  =$zip;
 		$data['type']=$type;
 		$data['report_months'] = $report_months;
-		$data['report_from'] = $this->input->post('report_from');
-		$data['report_to'] = $this->input->post('report_to');
+		$data['report_from'] = $this->input->post('report_from') == NULL ? '' : $this->input->post('report_from');
+		$data['report_to'] = $this->input->post('report_to') == NULL ? '' : $this->input->post('report_to');
 		$data['hide_columns'] = $hide_columns;
 		$data['filter_templates'] = $this->si_lead_filter_model->get_templates($current_user_id);
 		$data['summary']  = $this->get_leads_summary();
 		$data['list_custom_field'] = $list_custom_field;
-		
 		$this->load->view('lead_report', $data);
 	}
-	
+
 	function table()
 	{
 		$data = $this->input->post();
-		
 		$data['custom_date_select'] = '';
 		$date_by = 'dateadded';
 		if ($data['date_by']!='')
 			$date_by = $data['date_by'];
-		
+
 		if ($data['report_months']!=''){
 			$report_months = $data['report_months'];
 			$data['custom_date_select'] = $this->get_where_report_period('DATE('.$date_by.')',$report_months);
-		}	
+		}
 		$data['perfex_version'] = (int)$this->app->get_current_db_version();
-		
+
 		$this->app->get_table_data(module_views_path(SI_LEAD_FILTERS_MODULE_NAME,'tables/leads'), $data);
 	}
-	
+
 	private function get_leads_summary()
 	{
 		$statuses = $this->leads_model->get_status();
@@ -221,8 +219,8 @@ class Si_lead_filters extends AdminController
 			if(!empty($filter_obj))
 			{
 				$_POST = unserialize($filter_obj->filter_parameters);
-			}	
-		}	
+			}
+		}
 
 		$has_permission_view   = has_permission('leads', '', 'view');
 
@@ -238,7 +236,7 @@ class Si_lead_filters extends AdminController
 			$status=array('');
 		$source = $this->input->post('source');
 		if(empty($source))
-			$source=array('');	
+			$source=array('');
 		$tag = $this->input->post('tags');
 		if(empty($tag))
 			$tag=array('');
@@ -253,34 +251,34 @@ class Si_lead_filters extends AdminController
 			$state=array('');
 		$zip = $this->input->post('zips');
 		if(empty($zip))
-			$zip=array('');				
-		
-		$type = $this->input->post('type');	
-			
+			$zip=array('');
+
+		$type = $this->input->post('type');
+
 		if ($this->input->post('date_by')) {
 			$date_by = $this->input->post('date_by');
 		} else {
 			$date_by = 'dateadded';
 		}
-		
+
 		$fetch_month_from = $date_by;
-		
+
 		if ($this->input->post('report_months')!='')
 			$report_months = $this->input->post('report_months');
 		elseif($this->input->post('report_months')=='' && $filter_id=='' && $this->input->server('REQUEST_METHOD') !== 'POST')
 			$report_months = 'this_month';//by default when loaded
 		else
 			$report_months = '';
-		
+
 		//get query Leads
-		$sqlLeadsSelect = db_prefix().'leads.status,count(*) as total,sum(lost) as total_lost,sum(junk) as total_junk';	
+		$sqlLeadsSelect = db_prefix().'leads.status,count(*) as total,sum(lost) as total_lost,sum(junk) as total_junk';
 		$this->db->select($sqlLeadsSelect);
-		
+
 		if($report_months!=''){
 			$custom_date_select = $this->get_where_report_period('DATE('.$fetch_month_from.')',$report_months);
 			$this->db->where("1=1 ".$custom_date_select);
 		}
-		
+
 		if(!$has_permission_view){
 			$this->db->where('(assigned =' . $staff_id . ' OR addedfrom = ' . $staff_id . ' OR is_public = 1)');
 		}
@@ -289,15 +287,15 @@ class Si_lead_filters extends AdminController
 				$this->db->where('assigned',$staff_id);
 			}
 		}
-		
+
 		if ($status && !in_array('',$status)) {
 			$this->db->where_in('status', $status);
 		}
-		
+
 		if ($source && !in_array('',$source)) {
 			$this->db->where_in('source', $source);
 		}
-		
+
 		if ($tag && !in_array('',$tag)) {
 			$this->db->join(db_prefix() . 'taggables' , '('.db_prefix() . 'taggables.rel_id = ' . db_prefix() . 'leads.id and rel_type=\'lead\')','left');
 			$this->db->where_in('tag_id', $tag);
@@ -338,7 +336,7 @@ class Si_lead_filters extends AdminController
 			if($type=='public')
 				$this->db->where('is_public',1);
 			if($type=='not_assigned')
-				$this->db->where('assigned',0);			
+				$this->db->where('assigned',0);
 		}
 
 		$this->db->group_by('status');
@@ -368,13 +366,13 @@ class Si_lead_filters extends AdminController
 			}elseif(isset($_status['lost'])){
 				$statuses[$key]['total'] = isset($status_count['lost'])?$status_count['lost']:0;
 				$statuses[$key]['percent'] = ($total_leads > 0 ? number_format(($statuses[$key]['total'] * 100) / $total_leads, 2) : 0);
-			}	
-								
+			}
+
 		}
-	
+
 		return $statuses;
 	}
-	
+
 	function list_filters()
 	{
 		$data=array();
@@ -389,7 +387,7 @@ class Si_lead_filters extends AdminController
 		$this->si_lead_filter_model->delete($id,$current_user_id);
 		redirect('si_lead_filters/list_filters');
 	}
-	
+
 	function get_lead_status($id)
     {
        // if (has_permission('leads', '', 'edit')) {
@@ -397,22 +395,22 @@ class Si_lead_filters extends AdminController
             // Generate lead Status dropdown
 			$lead = (array)$this->leads_model->get($id);
 			$lead_statuses = $this->leads_model->get_status();
-			
+
             $leadHtml = '';
 			$success = false;
 			if(!empty($lead)){
 				$status          = si_get_lead_status_by_id($lead['status']);
 				$leadHtml    = '';
-			
+
 				$leadHtml .= '<span class="inline-block label" style="color:' . $status['color'] . ';border:1px solid ' . $status['color'] . '" task-status-table="' . $lead['status'] . '">';
-			
+
 				$leadHtml .= $status['name'];
-			
+
 				$leadHtml .= '<div class="dropdown inline-block mleft5 table-export-exclude">';
 				$leadHtml .= '<a href="#" style="font-size:14px;vertical-align:middle;" class="dropdown-toggle text-dark" id="tableLeadsStatus-' . $lead['id'] . '" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">';
 				$leadHtml .= '<span data-toggle="tooltip" title="' . _l('ticket_single_change_status') . '"><i class="fa fa-caret-down" aria-hidden="true"></i></span>';
 				$leadHtml .= '</a>';
-		
+
 				$leadHtml .= '<ul class="dropdown-menu dropdown-menu-right" aria-labelledby="tableLeadsStatus-' . $lead['id'] . '">';
 				foreach ($lead_statuses as $leadChangeStatus) {
 					if ($lead['status'] != $leadChangeStatus['id']) {
@@ -425,7 +423,7 @@ class Si_lead_filters extends AdminController
 				}
 				$leadHtml .= '</ul>';
 				$leadHtml .= '</div>';
-			
+
 				$leadHtml .= '</span>';
 				$success = true;
 
@@ -434,7 +432,7 @@ class Si_lead_filters extends AdminController
 				'success'  => $success,
 				'leadHtml' => $leadHtml,
 			]);
-        
+
        /* } else {
             echo json_encode([
                 'success'  => false,
