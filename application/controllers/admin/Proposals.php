@@ -41,12 +41,19 @@ class Proposals extends AdminController
 
             $this->load->view('admin/proposals/pipeline/manage', $data);
         } else {
-
+            if ($this->input->post('report_months')!='')
+			    $report_months = $this->input->post('report_months');
+            elseif($this->input->post('report_months')=='' && $this->input->server('REQUEST_METHOD') !== 'POST')
+                $report_months = 'this_month';//by default when loaded
+            else
+                $report_months = '';
             // Pipeline was initiated but user click from home page and need to show table only to filter
             if ($this->input->get('status') && $isPipeline) {
                 $this->pipeline(0, true);
             }
-
+            $data['report_months'] = $report_months;
+            $data['report_from'] = $this->input->post('report_from') == NULL ? '' : $this->input->post('report_from');
+            $data['report_to'] = $this->input->post('report_to') == NULL ? '' : $this->input->post('report_to');
             $data['proposal_id']           = $proposal_id;
             $data['switch_pipeline']       = true;
             $data['title']                 = _l('proposals');
