@@ -91,18 +91,18 @@ class Proposals extends AdminController
 
 		if ($data['report_months']!=''){
 			$report_months = $data['report_months'];
-			$data['custom_date_select'] = $this->get_where_report_period('DATE('.$date_by.')',$report_months);
+			$data['custom_date_select'] = $this->get_where_report_period('DATE('.$date_by.')',$report_months, $date_by);
 		}
 
         if ($data['report_months_valid']!=''){
 			$report_months_valid = $data['report_months_valid'];
-			$data['custom_date_select_valid'] = $this->get_where_report_period('DATE('.$date_by_valid.')',$report_months_valid);
+			$data['custom_date_select_valid'] = $this->get_where_report_period('DATE('.$date_by_valid.')',$report_months_valid, $date_by_valid);
 		}
         $data['perfex_version'] = (int)$this->app->get_current_db_version();
         $this->app->get_table_data('proposals', $data);
     }
 
-    private function get_where_report_period($field = 'date',$months_report='this_month')
+    private function get_where_report_period($field = 'date',$months_report='this_month', $date_type='date')
 	{
 		$custom_date_select = '';
 		if ($months_report != '') {
@@ -138,8 +138,12 @@ class Proposals extends AdminController
 				'" AND "' .
 				date('Y-m-d', strtotime(date(date('Y', strtotime('last year')) . '-12-31'))) . '")';
 			} elseif ($months_report == 'custom') {
-				$from_date = to_sql_date($this->input->post('report_from'));
-				$to_date   = to_sql_date($this->input->post('report_to'));
+                $from_date = to_sql_date($this->input->post('report_from'));
+                $to_date   = to_sql_date($this->input->post('report_to'));
+				if($date_type == "open_till"){
+                    $from_date = to_sql_date($this->input->post('report_from_valid'));
+                    $to_date   = to_sql_date($this->input->post('report_to_valid'));
+                }
 				if ($from_date == $to_date) {
 					$custom_date_select = 'AND ' . $field . ' = "' . $from_date . '"';
 				} else {
