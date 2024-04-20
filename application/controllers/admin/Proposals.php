@@ -47,6 +47,13 @@ class Proposals extends AdminController
                 $report_months = 'this_month';//by default when loaded
             else
                 $report_months = '';
+
+            if ($this->input->post('report_months_valid')!='')
+			    $report_months_valid = $this->input->post('report_months_valid');
+            elseif($this->input->post('report_months_valid')=='' && $this->input->server('REQUEST_METHOD') !== 'POST')
+                $report_months_valid = 'this_month';//by default when loaded
+            else
+                $report_months_valid = '';
             // Pipeline was initiated but user click from home page and need to show table only to filter
             if ($this->input->get('status') && $isPipeline) {
                 $this->pipeline(0, true);
@@ -54,6 +61,9 @@ class Proposals extends AdminController
             $data['report_months'] = $report_months;
             $data['report_from'] = $this->input->post('report_from') == NULL ? '' : $this->input->post('report_from');
             $data['report_to'] = $this->input->post('report_to') == NULL ? '' : $this->input->post('report_to');
+            $data['report_months_valid'] = $report_months_valid;
+            $data['report_from_valid'] = $this->input->post('report_from_valid') == NULL ? '' : $this->input->post('report_from_valid');
+            $data['report_to_valid'] = $this->input->post('report_to_valid') == NULL ? '' : $this->input->post('report_to_valid');
             $data['proposal_id']           = $proposal_id;
             $data['switch_pipeline']       = true;
             $data['title']                 = _l('proposals');
@@ -75,11 +85,18 @@ class Proposals extends AdminController
         }
         $data = $this->input->post();
 		$data['custom_date_select'] = '';
+        $data['custom_date_select_valid'] = '';
 		$date_by = 'date';
+        $date_by_valid = 'open_till';
 
 		if ($data['report_months']!=''){
 			$report_months = $data['report_months'];
 			$data['custom_date_select'] = $this->get_where_report_period('DATE('.$date_by.')',$report_months);
+		}
+
+        if ($data['report_months_valid']!=''){
+			$report_months_valid = $data['report_months_valid'];
+			$data['custom_date_select_valid'] = $this->get_where_report_period('DATE('.$date_by_valid.')',$report_months_valid);
 		}
         $data['perfex_version'] = (int)$this->app->get_current_db_version();
         $this->app->get_table_data('proposals', $data);

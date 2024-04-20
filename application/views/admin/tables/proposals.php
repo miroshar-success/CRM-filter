@@ -76,6 +76,11 @@ if(isset($custom_date_select) && $custom_date_select != '') {
 	array_push($where, $custom_date_select);
 };
 
+//filter by open_till
+if(isset($custom_date_select_valid) && $custom_date_select_valid != '') {
+	array_push($where, $custom_date_select_valid);
+};
+
 if (count($filter) > 0) {
     array_push($where, 'AND (' . prepare_dt_filter($filter) . ')');
 }

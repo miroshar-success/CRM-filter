@@ -34,6 +34,20 @@ $(function() {
     <?php
     }
     ?>
+    <?php if ($report_months_valid !== '') { ?>
+        $('#report_months_valid').val("<?php echo htmlspecialchars($report_months_valid); ?>");
+    <?php }
+    if ($report_from_valid !== '') {
+    ?>
+        $('#report_from_valid').val("<?php echo htmlspecialchars($report_from_valid); ?>");
+    <?php
+    }
+    if ($report_to_valid !== '') {
+    ?>
+        $('#report_to_valid').val("<?php echo htmlspecialchars($report_to_valid); ?>");
+    <?php
+    }
+    ?>
     var Proposals_ServerParams = {};
     $.each($('._hidden_inputs._filters input, ._hidden_inputs._filters select'), function() {
         Proposals_ServerParams[$(this).attr('name')] = '[name="' + $(this).attr('name') + '"]';
