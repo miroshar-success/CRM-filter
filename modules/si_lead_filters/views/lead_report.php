@@ -324,7 +324,6 @@ $base_currency = $this->currencies_model->get_base_currency();
 		$.each($('._hidden_inputs._filters input,._hidden_inputs._filters select'), function() {
 			SiLeadsServerParams[$(this).attr('name')] = '[name="' + $(this).attr('name') + '"]';
 		});
-		console.log('123');
 		initDataTable('.table-si-leads', admin_url + 'si_lead_filters/table', undefined, undefined,
 			SiLeadsServerParams, <?php echo hooks()->apply_filters('si_leads_table_default_order', json_encode(array(1, 'desc'))); ?>);
 	})(jQuery);

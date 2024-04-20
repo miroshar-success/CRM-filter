@@ -73,9 +73,66 @@ class Proposals extends AdminController
         ) {
             ajax_access_denied();
         }
+        $data = $this->input->post();
+		$data['custom_date_select'] = '';
+		$date_by = 'date';
 
-        $this->app->get_table_data('proposals');
+		if ($data['report_months']!=''){
+			$report_months = $data['report_months'];
+			$data['custom_date_select'] = $this->get_where_report_period('DATE('.$date_by.')',$report_months);
+		}
+        $data['perfex_version'] = (int)$this->app->get_current_db_version();
+        $this->app->get_table_data('proposals', $data);
     }
+
+    private function get_where_report_period($field = 'date',$months_report='this_month')
+	{
+		$custom_date_select = '';
+		if ($months_report != '') {
+			if (is_numeric($months_report)) {
+				// Last month
+				if ($months_report == '1') {
+					$beginMonth = date('Y-m-01', strtotime('first day of last month'));
+					$endMonth   = date('Y-m-t', strtotime('last day of last month'));
+				} else {
+					$months_report = (int) $months_report;
+					$months_report--;
+					$beginMonth = date('Y-m-01', strtotime("-$months_report MONTH"));
+					$endMonth   = date('Y-m-t');
+				}
+
+				$custom_date_select = 'AND (' . $field . ' BETWEEN "' . $beginMonth . '" AND "' . $endMonth . '")';
+			} elseif ($months_report == 'today') {
+				$custom_date_select = 'AND (' . $field . ' BETWEEN "' . date('Y-m-d') . '" AND "' . date('Y-m-d') . '")';
+			} elseif ($months_report == 'this_week') {
+				$custom_date_select = 'AND (' . $field . ' BETWEEN "' . date('Y-m-d', strtotime('monday this week')) . '" AND "' . date('Y-m-d', strtotime('sunday this week')) . '")';
+			} elseif ($months_report == 'last_week') {
+				$custom_date_select = 'AND (' . $field . ' BETWEEN "' . date('Y-m-d', strtotime('monday last week')) . '" AND "' . date('Y-m-d', strtotime('sunday last week')) . '")';
+			} elseif ($months_report == 'this_month') {
+				$custom_date_select = 'AND (' . $field . ' BETWEEN "' . date('Y-m-01') . '" AND "' . date('Y-m-t') . '")';
+			} elseif ($months_report == 'this_year') {
+				$custom_date_select = 'AND (' . $field . ' BETWEEN "' .
+				date('Y-m-d', strtotime(date('Y-01-01'))) .
+				'" AND "' .
+				date('Y-m-d', strtotime(date('Y-12-31'))) . '")';
+			} elseif ($months_report == 'last_year') {
+				$custom_date_select = 'AND (' . $field . ' BETWEEN "' .
+				date('Y-m-d', strtotime(date(date('Y', strtotime('last year')) . '-01-01'))) .
+				'" AND "' .
+				date('Y-m-d', strtotime(date(date('Y', strtotime('last year')) . '-12-31'))) . '")';
+			} elseif ($months_report == 'custom') {
+				$from_date = to_sql_date($this->input->post('report_from'));
+				$to_date   = to_sql_date($this->input->post('report_to'));
+				if ($from_date == $to_date) {
+					$custom_date_select = 'AND ' . $field . ' = "' . $from_date . '"';
+				} else {
+					$custom_date_select = 'AND (' . $field . ' BETWEEN "' . $from_date . '" AND "' . $to_date . '")';
+				}
+			}
+		}
+
+		 return $custom_date_select;
+	}
 
     public function proposal_relations($rel_id, $rel_type)
     {

@@ -2,11 +2,11 @@
 <?php $report_heading = '';?>
 <div class="panel_s">
     <div class="panel-body">
-        <?php echo form_open($this->uri->uri_string() . ($this->input->get('filter_id') ? '?filter_id=' . $this->input->get('filter_id') : ''), "id=si_form_lead_filter"); ?>
+        <?php echo form_open($this->uri->uri_string() . ($this->input->get('filter_id') ? '?filter_id=' . $this->input->get('filter_id') : ''), "id=proposal_form_filter"); ?>
         <div class="_filters _hidden_inputs">
             <div class="row">
                 <div class="col-md-2 form-group border-right" id="report-time">
-                    <label for="months-report"><?php echo _l('period_datepicker'); ?></label><br />
+                    <label for="months-report"><?php echo _l('proposal_date'); ?></label><br />
                     <select class="selectpicker" name="report_months" id="report_months" data-width="100%" data-none-selected-text="<?php echo _l('dropdown_non_selected_tex'); ?>">
                         <option value=""><?php echo _l('report_sales_months_all_time'); ?></option>
                         <option value="today"><?php echo _l('today'); ?></option>

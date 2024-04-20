@@ -71,6 +71,11 @@ if (count($yearsArray) > 0) {
     array_push($filter, 'AND YEAR(date) IN (' . implode(', ', $yearsArray) . ')');
 }
 
+//filter by dates
+if(isset($custom_date_select) && $custom_date_select != '') {
+	array_push($where, $custom_date_select);
+};
+
 if (count($filter) > 0) {
     array_push($where, 'AND (' . prepare_dt_filter($filter) . ')');
 }
