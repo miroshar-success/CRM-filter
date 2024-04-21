@@ -28,7 +28,17 @@ class Proposals_model extends App_Model
     {
         return $this->statuses;
     }
-
+    public function get_status_name()
+    {
+        return [
+            ["id" => 1, "name" => _l('proposal_status_open')],
+            ["id" => 2, "name" => _l('proposal_status_declined')],
+            ["id" => 3, "name" => _l('proposal_status_accepted')],
+            ["id" => 4, "name" =>  _l('proposal_status_sent')],
+            ["id" => 5, "name" => _l('proposal_status_revised')],
+            ["id" => 6, "name" => _l('proposal_status_draft')]
+        ];
+    }
     public function get_sale_agents()
     {
         return $this->db->query('SELECT DISTINCT(assigned) as sale_agent FROM ' . db_prefix() . 'proposals WHERE assigned != 0')->result_array();

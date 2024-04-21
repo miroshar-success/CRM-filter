@@ -203,6 +203,31 @@ $report_heading_valid = '';
                 }
                 ?>
                 <!--ended for custom field-->
+                <!--start status -->
+                <div class="col-md-2 text-center1 border-right">
+                    <label for="status" class="control-label"><?php echo _l('proposal_status'); ?></label>
+                    <?php
+                    echo render_select(
+                        'statuses_[]',
+                        $statuses,
+                        array('id', 'name'),
+                        '',
+                        $selected_statuses,
+                        array(
+                            'data-width' => '100%',
+                            'data-none-selected-text' => _l('leads_all'),
+                            'multiple' => true,
+                            'data-actions-box' => true,
+                            'onchange' => "dt_custom_view(this.value,'.table-proposals','status'); return false;"
+                        ),
+                        array(),
+                        'no-mbot',
+                        'status',
+                        false
+                    );
+                    ?>
+                </div>
+                <!--end status-->
             </div>
         </div>
         <?php echo form_close(); ?>

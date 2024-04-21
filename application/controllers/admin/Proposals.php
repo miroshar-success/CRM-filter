@@ -41,6 +41,9 @@ class Proposals extends AdminController
 
             $this->load->view('admin/proposals/pipeline/manage', $data);
         } else {
+            $selected_statuses = $this->input->post('statuses_');
+            if(empty($selected_statuses))
+                $selected_statuses = array('');
             if ($this->input->post('report_months') != '')
                 $report_months = $this->input->post('report_months');
             elseif ($this->input->post('report_months') == '' && $this->input->server('REQUEST_METHOD') !== 'POST')
@@ -58,7 +61,6 @@ class Proposals extends AdminController
             if ($this->input->get('status') && $isPipeline) {
                 $this->pipeline(0, true);
             }
-
             $data['report_months'] = $report_months;
             $data['report_from'] = $this->input->post('report_from') == NULL ? '' : $this->input->post('report_from');
             $data['report_to'] = $this->input->post('report_to') == NULL ? '' : $this->input->post('report_to');
@@ -68,6 +70,8 @@ class Proposals extends AdminController
             $data['proposal_id']           = $proposal_id;
             $data['switch_pipeline']       = true;
             $data['title']                 = _l('proposals');
+            $data['selected_statuses']     = $selected_statuses;
+            $data['statuses']              = $this->proposals_model->get_status_name();
             $data['proposal_statuses']     = $this->proposals_model->get_statuses();
             $data['proposals_sale_agents'] = $this->proposals_model->get_sale_agents();
             $data['years']                 = $this->proposals_model->get_proposals_years();

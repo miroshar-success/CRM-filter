@@ -48,7 +48,6 @@ foreach ($statuses as $status) {
 if (count($statusIds) > 0) {
     array_push($filter, 'AND' . db_prefix() . 'proposals.status IN (' . implode(', ', $statusIds) . ')');
 }
-
 $agents    = $this->ci->proposals_model->get_sale_agents();
 $agentsIds = [];
 foreach ($agents as $agent) {
@@ -72,13 +71,13 @@ if (count($yearsArray) > 0) {
 }
 
 //filter by dates
-if(isset($custom_date_select) && $custom_date_select != '') {
-	array_push($where, $custom_date_select);
+if (isset($custom_date_select) && $custom_date_select != '') {
+    array_push($where, $custom_date_select);
 };
 
 //filter by open_till
-if(isset($custom_date_select_valid) && $custom_date_select_valid != '') {
-	array_push($where, $custom_date_select_valid);
+if (isset($custom_date_select_valid) && $custom_date_select_valid != '') {
+    array_push($where, $custom_date_select_valid);
 };
 
 if (count($filter) > 0) {
@@ -104,11 +103,18 @@ foreach ($custom_fields as $key => $field) {
 if ($project_id) {
     $where[] = 'AND project_id=' . $this->ci->db->escape_str($project_id);
 }
+
 //filter by custom fields
-if(!empty($cf)){
-	foreach($cf as $_cf=>$value){
-		array_push($where, 'AND '.db_prefix() . 'proposals.id in (SELECT relid FROM '.db_prefix() . 'customfieldsvalues  where fieldid='.$_cf.' and value in ("'.implode('","',$value).'"))');
-	}
+if (!empty($cf)) {
+    foreach ($cf as $_cf => $value) {
+        array_push($where, 'AND ' . db_prefix() . 'proposals.id in (SELECT relid FROM ' . db_prefix() . 'customfieldsvalues  where fieldid=' . $_cf . ' and value in ("' . implode('","', $value) . '"))');
+    }
+}
+//filter by status field
+if (!isset($statuses_) || empty($statuses_))
+    $statuses_ = array('');
+if ($statuses_ && !in_array('', $statuses_) && count($statuses_) > 0) {
+    array_push($where, 'AND ' . db_prefix() . 'proposals.status IN (' . implode(',', $statuses_) . ')');
 }
 
 $aColumns = hooks()->apply_filters('proposals_table_sql_columns', $aColumns);
@@ -138,7 +144,7 @@ foreach ($rResult as $aRow) {
 
     $numberOutput .= '<a href="' . site_url('proposal/' . $aRow[db_prefix() . 'proposals.id'] . '/' . $aRow['hash']) . '" target="_blank">' . _l('view') . '</a>';
     if (has_permission('proposals', '', 'edit')) {
-        $numberOutput .= ' | <a href="' . admin_url('proposals/proposal/' . $aRow[db_prefix() . 'proposals.id']) . '"' . ($project_id ? 'target="_blank"': '') . '>' . _l('edit') . '</a>';
+        $numberOutput .= ' | <a href="' . admin_url('proposals/proposal/' . $aRow[db_prefix() . 'proposals.id']) . '"' . ($project_id ? 'target="_blank"' : '') . '>' . _l('edit') . '</a>';
     }
     $numberOutput .= '</div>';
 
