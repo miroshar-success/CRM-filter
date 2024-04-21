@@ -15,6 +15,10 @@ var hidden_columns = [4, 5, 6, 7, 8];
 </script>
 <?php init_tail(); ?>
 <div id="convert_helper"></div>
+
+</body>
+
+</html>
 <script src="/assets/js/admin/proposals.js"></script>
 <script>
 var proposal_id;
@@ -58,6 +62,3 @@ $(function() {
     init_proposal();
 });
 </script>
-</body>
-
-</html>

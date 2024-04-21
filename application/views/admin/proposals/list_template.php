@@ -146,9 +146,9 @@
                     $custom_fields = get_custom_fields('proposal', ['show_on_table' => 1]);
                     foreach ($custom_fields as $field) {
                         array_push($table_data, [
-                         'name'     => $field['name'],
-                         'th_attrs' => ['data-type' => $field['type'], 'data-custom-field' => 1],
-                     ]);
+                            'name'     => $field['name'],
+                            'th_attrs' => ['data-type' => $field['type'], 'data-custom-field' => 1],
+                        ]);
                     }
 
                     $table_data = hooks()->apply_filters('proposals_table_columns', $table_data);

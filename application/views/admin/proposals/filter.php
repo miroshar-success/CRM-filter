@@ -1,7 +1,7 @@
 <?php defined('BASEPATH') or exit('No direct script access allowed'); ?>
 <?php
-    $report_heading = '';
-    $report_heading_valid = '';
+$report_heading = '';
+$report_heading_valid = '';
 ?>
 <div class="panel_s">
     <div class="panel-body">
@@ -80,7 +80,7 @@
                         <div class="col-md-6 border-right">
                             <label for="report_to" class="control-label"><?php echo _l('report_sales_to_date'); ?></label>
                             <div class="input-group date">
-                                <input type="text" class="form-control datepicker" id="report_to" name="report_to" autocomplete="off" onchange="dt_custom_view(this.value,'.table-si-leads','report_to'); return false;">
+                                <input type="text" class="form-control datepicker" id="report_to" name="report_to" autocomplete="off" onchange="dt_custom_view(this.value,'.table-proposals','report_to'); return false;">
                                 <div class="input-group-addon">
                                     <i class="fa fa-calendar calendar-icon"></i>
                                 </div>
@@ -170,6 +170,39 @@
                     </div>
                 </div>
                 <!--end Open Till div-->
+                <!--added for custom field-->
+                <?php if (!empty($list_custom_field)) {
+                    $cfs = get_custom_fields('proposal', "id in (" . implode(',', $list_custom_field) . ")");
+                    foreach ($cfs as $cf) { ?>
+                        <div class="col-md-2 border-right mbot15">
+                            <label class="control-label"><?php echo $cf['name']; ?></label>
+                            <?php
+                            echo render_select(
+                                "cf[$cf[id]][]",
+                                si_lf_get_custom_field_values($cf['id']),
+                                array('value', 'value'),
+                                '',
+                                (isset($selected_custom_fields[$cf['id']])
+                                    ? $selected_custom_fields[$cf['id']]
+                                    : ''
+                                ),
+                                array(
+                                    'data-width' => '100%',
+                                    'data-none-selected-text' => _l('leads_all'),
+                                    'multiple' => true,
+                                    'data-actions-box' => true,
+                                    'onchange' => "dt_custom_view(this.value,'.table-proposals','cf');return false;"
+                                ),
+                                array(),
+                                'no-mbot',
+                                '',
+                                false
+                            ); ?>
+                        </div>
+                <?php }
+                }
+                ?>
+                <!--ended for custom field-->
             </div>
         </div>
         <?php echo form_close(); ?>

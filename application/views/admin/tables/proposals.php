@@ -93,7 +93,6 @@ $join = [
     'LEFT JOIN ' . db_prefix() . 'projects ON ' . db_prefix() . 'projects.id = ' . db_prefix() . 'proposals.project_id',
 ];
 $custom_fields = get_table_custom_fields('proposal');
-
 foreach ($custom_fields as $key => $field) {
     $selectAs = (is_cf_date($field) ? 'date_picker_cvalue_' . $key : 'cvalue_' . $key);
 
@@ -105,9 +104,14 @@ foreach ($custom_fields as $key => $field) {
 if ($project_id) {
     $where[] = 'AND project_id=' . $this->ci->db->escape_str($project_id);
 }
+//filter by custom fields
+if(!empty($cf)){
+	foreach($cf as $_cf=>$value){
+		array_push($where, 'AND '.db_prefix() . 'proposals.id in (SELECT relid FROM '.db_prefix() . 'customfieldsvalues  where fieldid='.$_cf.' and value in ("'.implode('","',$value).'"))');
+	}
+}
 
 $aColumns = hooks()->apply_filters('proposals_table_sql_columns', $aColumns);
-
 // Fix for big queries. Some hosting have max_join_limit
 if (count($custom_fields) > 4) {
     @$this->ci->db->query('SET SQL_BIG_SELECTS=1');
