@@ -2176,7 +2176,7 @@ $(function () {
   if (table_invoices.length > 0 || table_estimates.length > 0) {
     // Invoices additional server params
     var Sales_table_ServerParams = {};
-    var Sales_table_Filter = $("._hidden_inputs._filters input");
+    var Sales_table_Filter = $("._hidden_inputs._filters input, ._hidden_inputs._filters select");
 
     $.each(Sales_table_Filter, function () {
       Sales_table_ServerParams[$(this).attr("name")] =
