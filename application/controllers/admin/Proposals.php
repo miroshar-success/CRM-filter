@@ -70,12 +70,14 @@ class Proposals extends AdminController
             $data['proposal_id']           = $proposal_id;
             $data['switch_pipeline']       = true;
             $data['title']                 = _l('proposals');
+            $data['total_min']             = $this->input->post('total_min') == NULL ? '' : $this->input->post('total_min');
+            $data['total_max']             = $this->input->post('total_max') == NULL ? '' : $this->input->post('total_max');
             $data['selected_statuses']     = $selected_statuses;
             $data['statuses']              = $this->proposals_model->get_status_name();
             $data['proposal_statuses']     = $this->proposals_model->get_statuses();
             $data['proposals_sale_agents'] = $this->proposals_model->get_sale_agents();
             $data['years']                 = $this->proposals_model->get_proposals_years();
-            $data['list_custom_field'] = ['30', '31', '33'];
+            $data['list_custom_field'] = ['30', '33'];
             $this->load->view('admin/proposals/manage', $data);
         }
     }

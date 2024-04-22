@@ -44,8 +44,9 @@ class Invoices extends AdminController
         $data['report_to'] = $this->input->post('report_to') == NULL ? '' : $this->input->post('report_to');
         $data['selected_statuses']     = $selected_statuses;
         $data['statuses']              = $this->invoices_model->get_status_name();
-        $data['list_custom_field']     = ['28', '29'];
-
+        $data['list_custom_field']     = ['29'];
+        $data['total_min']             = $this->input->post('total_min') == NULL ? '' : $this->input->post('total_min');
+        $data['total_max']             = $this->input->post('total_max') == NULL ? '' : $this->input->post('total_max');
         $data['payment_modes']        = $this->payment_modes_model->get('', [], true);
         $data['invoiceid']            = $id;
         $data['title']                = _l('invoices');

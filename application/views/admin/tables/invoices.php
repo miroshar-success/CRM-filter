@@ -113,6 +113,11 @@ if (!empty($data['cf'])) {
         array_push($where, 'AND ' . db_prefix() . 'invoices.id in (SELECT relid FROM ' . db_prefix() . 'customfieldsvalues  where fieldid=' . $_cf . ' and value in ("' . implode('","', $value) . '"))');
     }
 }
+
+if (!empty($data['total_min']) && !empty($data['total_max'])) {
+    $where[] = 'AND ' . db_prefix() . 'invoices.id IN (SELECT relid FROM ' . db_prefix() . 'customfieldsvalues WHERE fieldid = "28" AND fieldto = "invoice" AND value BETWEEN ' . $data['total_min'] . ' AND ' . $data['total_max'] . ')';
+}
+
 if (!has_permission('invoices', '', 'view')) {
     $userWhere = 'AND ' . get_invoices_where_sql_for_staff(get_staff_user_id());
     array_push($where, $userWhere);

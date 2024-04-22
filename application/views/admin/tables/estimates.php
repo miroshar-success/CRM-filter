@@ -109,6 +109,11 @@ if (!empty($cf)) {
         array_push($where, 'AND ' . db_prefix() . 'estimates.id in (SELECT relid FROM ' . db_prefix() . 'customfieldsvalues  where fieldid=' . $_cf . ' and value in ("' . implode('","', $value) . '"))');
     }
 }
+
+if (!empty($total_min) && !empty($total_max)) {
+    $where[] = 'AND ' . db_prefix() . 'estimates.id IN (SELECT relid FROM ' . db_prefix() . 'customfieldsvalues WHERE fieldid = "25" AND fieldto = "estimate" AND value BETWEEN ' . $total_min . ' AND ' . $total_max . ')';
+}
+
 if (!has_permission('estimates', '', 'view')) {
     $userWhere = 'AND ' . get_estimates_where_sql_for_staff(get_staff_user_id());
     array_push($where, $userWhere);

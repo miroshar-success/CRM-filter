@@ -71,8 +71,9 @@ class Estimates extends AdminController
             $data['report_to_valid'] = $this->input->post('report_to_valid') == NULL ? '' : $this->input->post('report_to_valid');
             $data['selected_statuses']     = $selected_statuses;
             $data['statuses']              = $this->estimates_model->get_status_name();
-            $data['list_custom_field'] = ['23', '25'];
-
+            $data['list_custom_field'] = ['23'];
+            $data['total_min']             = $this->input->post('total_min') == NULL ? '' : $this->input->post('total_min');
+            $data['total_max']             = $this->input->post('total_max') == NULL ? '' : $this->input->post('total_max');
             $data['estimateid']            = $id;
             $data['switch_pipeline']       = true;
             $data['title']                 = _l('estimates');

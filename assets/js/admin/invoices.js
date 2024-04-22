@@ -37,4 +37,18 @@
     }
   });
 
+  $('input[name="total_min"]').on("change", function () {
+    if ($('input[name="total_max"]').val() != -1) {
+      $(".table-invoices").DataTable().ajax.reload();
+      return false;
+    }
+  });
+
+  $('input[name="total_max"]').on("change", function () {
+    if ($('input[name="total_min"]').val() != -1) {
+      $(".table-invoices").DataTable().ajax.reload();
+      return false;
+    }
+  });
+
 })(jQuery);

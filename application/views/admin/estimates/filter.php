@@ -203,6 +203,20 @@ $report_heading_valid = '';
                 }
                 ?>
                 <!--ended for custom field-->
+                <!-- start quatity total -->
+                <div class="col-md-2 text-center1 border-right mbot15">
+                    <label for="total-min" class="control-label"><?php echo _l('Qtà vetture totale MINIMUM'); ?></label>
+                    <div class="input-group">
+                        <input type="number" value="<?php isset($total_min) && !empty($total_min) ? $total_min : ''; ?>" min="0" class="form-control" id="total_min" name="total_min" autocomplete="off">
+                    </div>
+                </div>
+                <div class="col-md-2 text-center1 border-right mbot15">
+                    <label for="total-max" class="control-label"><?php echo _l('Qtà vetture totale MAXIMUM'); ?></label>
+                    <div class="input-group">
+                        <input type="number" value="<?php isset($total_max) && !empty($total_max) ? $total_max : ''; ?>" min="0" class="form-control" id="total_max" name="total_max" autocomplete="off">
+                    </div>
+                </div>
+                <!-- end quatity total -->
                 <!--start status -->
                 <div class="col-md-2 text-center1 border-right">
                     <label for="status" class="control-label"><?php echo _l('estimate_status'); ?></label>

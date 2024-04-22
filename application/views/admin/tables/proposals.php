@@ -110,6 +110,11 @@ if (!empty($cf)) {
         array_push($where, 'AND ' . db_prefix() . 'proposals.id in (SELECT relid FROM ' . db_prefix() . 'customfieldsvalues  where fieldid=' . $_cf . ' and value in ("' . implode('","', $value) . '"))');
     }
 }
+
+if (!empty($total_min) && !empty($total_max)) {
+    $where[] = 'AND ' . db_prefix() . 'proposals.id IN (SELECT relid FROM ' . db_prefix() . 'customfieldsvalues WHERE fieldid = "31" AND fieldto = "proposal" AND value BETWEEN ' . $total_min . ' AND ' . $total_max . ')';
+}
+
 //filter by status field
 if (!isset($statuses_) || empty($statuses_))
     $statuses_ = array('');
