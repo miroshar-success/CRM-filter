@@ -38,16 +38,123 @@ class Tasks extends AdminController
             $data['switch_kanban'] = true;
             $data['bodyclass']     = 'tasks-page kan-ban-body';
         }
-
+        $selected_statuses = $this->input->post('statuses_');
+        $selected_priority = $this->input->post('priority_');
+        $selected_assigned = $this->input->post('assigned_');
+        if (empty($selected_statuses))
+            $selected_statuses = array('');
+        if (empty($selected_priority))
+            $selected_priority = array('');
+        if (empty($selected_assigned))
+            $selected_assigned = array('');
+        if ($this->input->post('report_months_valid') != '')
+            $report_months_valid = $this->input->post('report_months_valid');
+        elseif ($this->input->post('report_months_valid') == '' && $this->input->server('REQUEST_METHOD') !== 'POST')
+            $report_months_valid = 'this_month'; //by default when loaded
+        else
+            $report_months_valid = '';
+        $data['report_from'] = $this->input->post('report_from') == NULL ? '' : $this->input->post('report_from');
+        $data['report_to'] = $this->input->post('report_to') == NULL ? '' : $this->input->post('report_to');
+        $data['report_months_valid'] = $report_months_valid;
+        $data['report_from_valid'] = $this->input->post('report_from_valid') == NULL ? '' : $this->input->post('report_from_valid');
+        $data['report_to_valid'] = $this->input->post('report_to_valid') == NULL ? '' : $this->input->post('report_to_valid');
+        $data['selected_statuses']     = $selected_statuses;
+        $data['statuses']              = $this->tasks_model->get_status_name();
+        $data['selected_priority']     = $selected_priority;
+        $data['selected_assigned']     = $selected_assigned;
+        $data['priority']              = $this->tasks_model->get_priority_name();
+        $data['list_custom_field']     = ['34'];
         $data['title'] = _l('tasks');
+        $tasks_filter_assignees = $this->misc_model->get_tasks_distinct_assignees();
+        $tasks_assignees = [];
+        foreach ($tasks_filter_assignees as $subArray) {
+            // Create a new array with the modified keys and values
+            $tasks_assignees_ = [
+                "id" => $subArray["assigneeid"],
+                "name" => $subArray["full_name"]
+            ];
+            // Add the modified sub-array to the modified array
+            $tasks_assignees[] = $tasks_assignees_;
+        }
+        $data['tasks_assignees'] = $tasks_assignees;
         $this->load->view('admin/tasks/manage', $data);
     }
 
     public function table()
     {
-        $this->app->get_table_data('tasks');
+        $data = $this->input->post();
+        $start_date = 'startdate';
+        $due_date = 'duedate';
+        $data['custom_date_select'] = $this->get_where_report_period('DATE(' . $start_date . ')', 'DATE(' . $due_date . ')');
+        $data['custom_date_select_valid'] = '';
+        if ($data['report_months_valid'] != '') {
+            $report_months_valid = $data['report_months_valid'];
+            $data['custom_date_select_valid'] = $this->get_where_report_period_valid('DATE(' . $due_date . ')', $report_months_valid, $due_date);
+        }
+        $this->app->get_table_data('tasks', $data);
+    }
+    private function get_where_report_period_valid($field = 'date', $months_report = 'this_month', $date_type = 'date')
+    {
+        $custom_date_select = '';
+        if ($months_report != '') {
+            if (is_numeric($months_report)) {
+                // Last month
+                if ($months_report == '1') {
+                    $beginMonth = date('Y-m-01', strtotime('first day of last month'));
+                    $endMonth   = date('Y-m-t', strtotime('last day of last month'));
+                } else {
+                    $months_report = (int) $months_report;
+                    $months_report--;
+                    $beginMonth = date('Y-m-01', strtotime("-$months_report MONTH"));
+                    $endMonth   = date('Y-m-t');
+                }
+
+                $custom_date_select = 'AND (' . $field . ' BETWEEN "' . $beginMonth . '" AND "' . $endMonth . '")';
+            } elseif ($months_report == 'today') {
+                $custom_date_select = 'AND (' . $field . ' BETWEEN "' . date('Y-m-d') . '" AND "' . date('Y-m-d') . '")';
+            } elseif ($months_report == 'tomorrow') {
+                $custom_date_select = 'AND (' . $field . ' BETWEEN "' . date('Y-m-d', strtotime('+1 day')) . '" AND "' . date('Y-m-d', strtotime('+1 day')) . '")';
+            } elseif ($months_report == 'this_week') {
+                $custom_date_select = 'AND (' . $field . ' BETWEEN "' . date('Y-m-d', strtotime('monday this week')) . '" AND "' . date('Y-m-d', strtotime('sunday this week')) . '")';
+            } elseif ($months_report == 'last_week') {
+                $custom_date_select = 'AND (' . $field . ' BETWEEN "' . date('Y-m-d', strtotime('monday last week')) . '" AND "' . date('Y-m-d', strtotime('sunday last week')) . '")';
+            } elseif ($months_report == 'this_month') {
+                $custom_date_select = 'AND (' . $field . ' BETWEEN "' . date('Y-m-01') . '" AND "' . date('Y-m-t') . '")';
+            } elseif ($months_report == 'this_year') {
+                $custom_date_select = 'AND (' . $field . ' BETWEEN "' .
+                    date('Y-m-d', strtotime(date('Y-01-01'))) .
+                    '" AND "' .
+                    date('Y-m-d', strtotime(date('Y-12-31'))) . '")';
+            } elseif ($months_report == 'last_year') {
+                $custom_date_select = 'AND (' . $field . ' BETWEEN "' .
+                    date('Y-m-d', strtotime(date(date('Y', strtotime('last year')) . '-01-01'))) .
+                    '" AND "' .
+                    date('Y-m-d', strtotime(date(date('Y', strtotime('last year')) . '-12-31'))) . '")';
+            } elseif ($months_report == 'custom') {
+                $from_date = to_sql_date($this->input->post('report_from_valid'));
+                $to_date   = to_sql_date($this->input->post('report_to_valid'));
+                if ($from_date == $to_date) {
+                    $custom_date_select = 'AND ' . $field . ' = "' . $from_date . '"';
+                } else {
+                    $custom_date_select = 'AND (' . $field . ' BETWEEN "' . $from_date . '" AND "' . $to_date . '")';
+                }
+            }
+        }
+
+        return $custom_date_select;
     }
 
+    private function get_where_report_period($startdate = 'startdate', $duedate = 'duedate',)
+    {
+        $custom_date_select = '';
+        $from_date = to_sql_date($this->input->post('report_from'));
+        $to_date   = to_sql_date($this->input->post('report_to'));
+        if (!($from_date == NULL && $to_date == NULL)) {
+            $custom_date_select = " AND $startdate >= '$from_date' AND $duedate <= '$to_date'";
+        }
+
+        return $custom_date_select;
+    }
     public function kanban()
     {
         echo $this->load->view('admin/tasks/kan_ban', [], true);
@@ -719,8 +826,10 @@ class Tasks extends AdminController
     {
         $task = $this->tasks_model->get($this->input->post('taskid'));
 
-        if (staff_can('edit', 'tasks') ||
-                ($task->current_user_is_creator && staff_can('create', 'tasks'))) {
+        if (
+            staff_can('edit', 'tasks') ||
+            ($task->current_user_is_creator && staff_can('create', 'tasks'))
+        ) {
             echo json_encode([
                 'success'  => $this->tasks_model->add_task_followers($this->input->post()),
                 'taskHtml' => $this->get_task_data($this->input->post('taskid'), true),
@@ -733,8 +842,10 @@ class Tasks extends AdminController
     {
         $task = $this->tasks_model->get($this->input->post('taskid'));
 
-        if (staff_can('edit', 'tasks') ||
-                ($task->current_user_is_creator && staff_can('create', 'tasks'))) {
+        if (
+            staff_can('edit', 'tasks') ||
+            ($task->current_user_is_creator && staff_can('create', 'tasks'))
+        ) {
             echo json_encode([
                 'success'  => $this->tasks_model->add_task_assignees($this->input->post()),
                 'taskHtml' => $this->get_task_data($this->input->post('taskid'), true),
@@ -776,8 +887,10 @@ class Tasks extends AdminController
     {
         $task = $this->tasks_model->get($taskid);
 
-        if (staff_can('edit', 'tasks') ||
-                ($task->current_user_is_creator && staff_can('create', 'tasks'))) {
+        if (
+            staff_can('edit', 'tasks') ||
+            ($task->current_user_is_creator && staff_can('create', 'tasks'))
+        ) {
             $success = $this->tasks_model->remove_assignee($id, $taskid);
             $message = '';
             if ($success) {
@@ -796,8 +909,10 @@ class Tasks extends AdminController
     {
         $task = $this->tasks_model->get($taskid);
 
-        if (staff_can('edit', 'tasks') ||
-                ($task->current_user_is_creator && staff_can('create', 'tasks'))) {
+        if (
+            staff_can('edit', 'tasks') ||
+            ($task->current_user_is_creator && staff_can('create', 'tasks'))
+        ) {
             $success = $this->tasks_model->remove_follower($id, $taskid);
             $message = '';
             if ($success) {
@@ -1259,9 +1374,11 @@ class Tasks extends AdminController
         if ($this->input->post() && $this->input->is_ajax_request()) {
             $payload = $this->input->post();
             $item    = $this->tasks_model->get_checklist_item($payload['checklistId']);
-            if ($item->addedfrom == get_staff_user_id()
+            if (
+                $item->addedfrom == get_staff_user_id()
                 || is_admin() ||
-                $this->tasks_model->is_task_creator(get_staff_user_id(), $payload['taskId'])) {
+                $this->tasks_model->is_task_creator(get_staff_user_id(), $payload['taskId'])
+            ) {
                 $this->tasks_model->update_checklist_assigned_staff($payload);
                 die;
             }

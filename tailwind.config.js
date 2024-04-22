@@ -18,6 +18,7 @@ module.exports = {
     "./assets/js/tickets.js",
     "./assets/js/app.js",
     "./assets/js/map.js",
+    "./assets/js/admin/proposals.js",
     "./install/*.php",
   ],
   safelist: [

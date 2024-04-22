@@ -81,6 +81,26 @@ class Tasks_model extends App_Model
         return $statuses;
     }
 
+    public function get_status_name()
+    {
+        return [
+            ["id" => 1, "name" => _l('task_status_1')],
+            ["id" => 2, "name" => _l('task_status_2')],
+            ["id" => 3, "name" => _l('task_status_3')],
+            ["id" => 4, "name" => _l('task_status_4')],
+            ["id" => 5, "name" => _l('task_status_5')],
+        ];
+    }
+
+    public function get_priority_name()
+    {
+        return [
+            ["id" => 1, "name" => _l('task_priority_low')],
+            ["id" => 2, "name" => _l('task_priority_medium')],
+            ["id" => 3, "name" => _l('task_priority_high')],
+            ["id" => 4, "name" => _l('task_priority_urgent')],
+        ];
+    }
     /**
      * Get task by id
      * @param  mixed $id task id

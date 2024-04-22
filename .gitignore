@@ -1,8 +1,10 @@
 application/config/config.php
 application/config/database.php
 application/config/constants.php
+application/config/app-config
 application/logs/
 application/cache/
+application/hooks/
 application/vendor/*
 uploads/*
 modules/helpers/*

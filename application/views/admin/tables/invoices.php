@@ -91,6 +91,10 @@ foreach ($years as $year) {
 if (count($yearArray) > 0) {
     array_push($where, 'AND YEAR(date) IN (' . implode(', ', $yearArray) . ')');
 }
+//filter by dates
+if (isset($data['custom_date_select']) && $data['custom_date_select'] != '') {
+    array_push($where, $data['custom_date_select']);
+};
 
 if (count($filter) > 0) {
     array_push($where, 'AND (' . prepare_dt_filter($filter) . ')');
@@ -103,12 +107,27 @@ if ($clientid != '') {
 if ($project_id) {
     array_push($where, 'AND project_id=' . $this->ci->db->escape_str($project_id));
 }
+//filter by custom fields
+if (!empty($data['cf'])) {
+    foreach ($data['cf'] as $_cf => $value) {
+        array_push($where, 'AND ' . db_prefix() . 'invoices.id in (SELECT relid FROM ' . db_prefix() . 'customfieldsvalues  where fieldid=' . $_cf . ' and value in ("' . implode('","', $value) . '"))');
+    }
+}
+
+if (!empty($data['total_min']) && !empty($data['total_max'])) {
+    $where[] = 'AND ' . db_prefix() . 'invoices.id IN (SELECT relid FROM ' . db_prefix() . 'customfieldsvalues WHERE fieldid = "28" AND fieldto = "invoice" AND value BETWEEN ' . $data['total_min'] . ' AND ' . $data['total_max'] . ')';
+}
 
 if (!has_permission('invoices', '', 'view')) {
     $userWhere = 'AND ' . get_invoices_where_sql_for_staff(get_staff_user_id());
     array_push($where, $userWhere);
 }
-
+//filter by status field
+if (!isset($data['statuses_']) || empty($data['statuses_']))
+    $data['statuses_'] = array('');
+if ($data['statuses_'] && !in_array('', $data['statuses_']) && count($data['statuses_']) > 0) {
+    array_push($where, 'AND ' . db_prefix() . 'invoices.status IN (' . implode(',', $data['statuses_']) . ')');
+}
 $aColumns = hooks()->apply_filters('invoices_table_sql_columns', $aColumns);
 
 // Fix for big queries. Some hosting have max_join_limit
@@ -188,3 +207,6 @@ foreach ($rResult as $aRow) {
 
     $output['aaData'][] = $row;
 }
+
+echo json_encode($output);
+die();

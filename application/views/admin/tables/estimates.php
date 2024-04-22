@@ -82,6 +82,16 @@ if (count($yearsArray) > 0) {
     array_push($filter, 'AND YEAR(date) IN (' . implode(', ', $yearsArray) . ')');
 }
 
+//filter by dates
+if (isset($custom_date_select) && $custom_date_select != '') {
+    array_push($where, $custom_date_select);
+};
+
+//filter by open_till
+if (isset($custom_date_select_valid) && $custom_date_select_valid != '') {
+    array_push($where, $custom_date_select_valid);
+};
+
 if (count($filter) > 0) {
     array_push($where, 'AND (' . prepare_dt_filter($filter) . ')');
 }
@@ -93,10 +103,26 @@ if ($clientid != '') {
 if ($project_id) {
     array_push($where, 'AND project_id=' . $this->ci->db->escape_str($project_id));
 }
+//filter by custom fields
+if (!empty($cf)) {
+    foreach ($cf as $_cf => $value) {
+        array_push($where, 'AND ' . db_prefix() . 'estimates.id in (SELECT relid FROM ' . db_prefix() . 'customfieldsvalues  where fieldid=' . $_cf . ' and value in ("' . implode('","', $value) . '"))');
+    }
+}
+
+if (!empty($total_min) && !empty($total_max)) {
+    $where[] = 'AND ' . db_prefix() . 'estimates.id IN (SELECT relid FROM ' . db_prefix() . 'customfieldsvalues WHERE fieldid = "25" AND fieldto = "estimate" AND value BETWEEN ' . $total_min . ' AND ' . $total_max . ')';
+}
 
 if (!has_permission('estimates', '', 'view')) {
     $userWhere = 'AND ' . get_estimates_where_sql_for_staff(get_staff_user_id());
     array_push($where, $userWhere);
+}
+//filter by status field
+if (!isset($statuses_) || empty($statuses_))
+    $statuses_ = array('');
+if ($statuses_ && !in_array('', $statuses_) && count($statuses_) > 0) {
+    array_push($where, 'AND ' . db_prefix() . 'estimates.status IN (' . implode(',', $statuses_) . ')');
 }
 
 $aColumns = hooks()->apply_filters('estimates_table_sql_columns', $aColumns);

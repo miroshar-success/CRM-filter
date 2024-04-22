@@ -2176,7 +2176,7 @@ $(function () {
   if (table_invoices.length > 0 || table_estimates.length > 0) {
     // Invoices additional server params
     var Sales_table_ServerParams = {};
-    var Sales_table_Filter = $("._hidden_inputs._filters input");
+    var Sales_table_Filter = $("._hidden_inputs._filters input, ._hidden_inputs._filters select");
 
     $.each(Sales_table_Filter, function () {
       Sales_table_ServerParams[$(this).attr("name")] =
@@ -2222,7 +2222,7 @@ $(function () {
   if (table_tasks.length) {
     var TasksServerParams = {},
       Tasks_Filters;
-    Tasks_Filters = $("._hidden_inputs._filters._tasks_filters input");
+    Tasks_Filters = $("._hidden_inputs._filters input, ._hidden_inputs._filters select");
     $.each(Tasks_Filters, function () {
       TasksServerParams[$(this).attr("name")] =
         '[name="' + $(this).attr("name") + '"]';
@@ -2235,7 +2235,7 @@ $(function () {
     if ($("body").hasClass("tasks-page")) {
       tasksTableURL += "?bulk_actions=true";
     }
-
+console.log(TasksServerParams);
     _table_api = initDataTable(
       table_tasks,
       tasksTableURL,

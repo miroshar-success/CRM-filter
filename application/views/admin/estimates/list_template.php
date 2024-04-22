@@ -94,6 +94,7 @@
             onclick="slideToggle('#stats-top'); init_estimates_total(true); return false;" data-toggle="tooltip"
             title="<?php echo _l('view_stats_tooltip'); ?>"><i class="fa fa-bar-chart"></i></a>
     </div>
+    <?php $this->load->view('admin/estimates/filter'); ?>
     <div class="row tw-mt-2 sm:tw-mt-4">
         <div class="col-md-12" id="small-table">
             <div class="panel_s">

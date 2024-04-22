@@ -12,7 +12,9 @@ class Clients extends AdminController
                 access_denied('customers');
             }
         }
-
+        $this->load->model('si_lead_filter_model');
+		$this->load->model('leads_model');
+		$this->load->model('currencies_model');
         $this->load->model('contracts_model');
         $data['contract_types'] = $this->contracts_model->get_contract_types();
         $data['groups']         = $this->clients_model->get_groups();
@@ -40,7 +42,43 @@ class Clients extends AdminController
         $data['contacts_logged_in_today'] = $this->clients_model->get_contacts('', 'last_login LIKE "' . date('Y-m-d') . '%"' . $whereContactsLoggedIn);
 
         $data['countries'] = $this->clients_model->get_clients_distinct_countries();
+        $source = $this->input->post('source');
+        if (empty($source))
+            $source = array('');
+        $country = $this->input->post('countries_');
+        if (empty($country))
+            $country = array('');
+        $city = $this->input->post('cities');
+        if (empty($city))
+            $city = array('');
+        $state = $this->input->post('states');
+        if (empty($state))
+            $state = array('');
+        $zip = $this->input->post('zips');
+        if (empty($zip))
+            $zip = array('');
 
+        if ($this->input->post('report_months') != '')
+            $report_months = $this->input->post('report_months');
+        elseif ($this->input->post('report_months') == '' && $this->input->server('REQUEST_METHOD') !== 'POST')
+            $report_months = 'this_month'; //by default when loaded
+        else
+            $report_months = '';
+
+        $data['lead_sources']  = $this->leads_model->get_source();
+		$data['lead_countries']  = $this->si_lead_filter_model->get_leads_country_list();
+		$data['lead_cities']  = $this->si_lead_filter_model->get_leads_city_list();
+		$data['lead_states']  = $this->si_lead_filter_model->get_leads_state_list();
+		$data['lead_zips']  = $this->si_lead_filter_model->get_leads_zip_list();
+        $data['sources']  = $source;
+        $data['countries_']  = $country;
+        $data['cities']  = $city;
+        $data['states']  = $state;
+        $data['zips']  = $zip;
+        $data['report_months'] = $report_months;
+        $data['report_from'] = $this->input->post('report_from') == NULL ? '' : $this->input->post('report_from');
+        $data['report_to'] = $this->input->post('report_to') == NULL ? '' : $this->input->post('report_to');
+        $data['list_custom_field'] = ["8", "9", "10", "11", "12", "14", "16", "26", "27", "40", "41", "43"];
         $this->load->view('admin/clients/manage', $data);
     }
 
@@ -51,10 +89,65 @@ class Clients extends AdminController
                 ajax_access_denied();
             }
         }
+        $data = $this->input->post();
+		$data['custom_date_select'] = '';
+		$date_by = db_prefix() . 'clients.datecreated';
 
-        $this->app->get_table_data('clients');
+		if ($data['report_months']!=''){
+			$report_months = $data['report_months'];
+			$data['custom_date_select'] = $this->get_where_report_period('DATE('.$date_by.')',$report_months);
+		}
+		$data['perfex_version'] = (int)$this->app->get_current_db_version();
+        $this->app->get_table_data('clients', $data);
     }
 
+    public function get_where_report_period($field = 'date', $months_report = 'this_month')
+    {
+        $custom_date_select = '';
+        if ($months_report != '') {
+            if (is_numeric($months_report)) {
+                // Last month
+                if ($months_report == '1') {
+                    $beginMonth = date('Y-m-01', strtotime('first day of last month'));
+                    $endMonth   = date('Y-m-t', strtotime('last day of last month'));
+                } else {
+                    $months_report = (int) $months_report;
+                    $months_report--;
+                    $beginMonth = date('Y-m-01', strtotime("-$months_report MONTH"));
+                    $endMonth   = date('Y-m-t');
+                }
+
+                $custom_date_select = 'AND (' . $field . ' BETWEEN "' . $beginMonth . '" AND "' . $endMonth . '")';
+            } elseif ($months_report == 'today') {
+                $custom_date_select = 'AND (' . $field . ' BETWEEN "' . date('Y-m-d') . '" AND "' . date('Y-m-d') . '")';
+            } elseif ($months_report == 'this_week') {
+                $custom_date_select = 'AND (' . $field . ' BETWEEN "' . date('Y-m-d', strtotime('monday this week')) . '" AND "' . date('Y-m-d', strtotime('sunday this week')) . '")';
+            } elseif ($months_report == 'last_week') {
+                $custom_date_select = 'AND (' . $field . ' BETWEEN "' . date('Y-m-d', strtotime('monday last week')) . '" AND "' . date('Y-m-d', strtotime('sunday last week')) . '")';
+            } elseif ($months_report == 'this_month') {
+                $custom_date_select = 'AND (' . $field . ' BETWEEN "' . date('Y-m-01') . '" AND "' . date('Y-m-t') . '")';
+            } elseif ($months_report == 'this_year') {
+                $custom_date_select = 'AND (' . $field . ' BETWEEN "' .
+                    date('Y-m-d', strtotime(date('Y-01-01'))) .
+                    '" AND "' .
+                    date('Y-m-d', strtotime(date('Y-12-31'))) . '")';
+            } elseif ($months_report == 'last_year') {
+                $custom_date_select = 'AND (' . $field . ' BETWEEN "' .
+                    date('Y-m-d', strtotime(date(date('Y', strtotime('last year')) . '-01-01'))) .
+                    '" AND "' .
+                    date('Y-m-d', strtotime(date(date('Y', strtotime('last year')) . '-12-31'))) . '")';
+            } elseif ($months_report == 'custom') {
+                $from_date = to_sql_date($this->input->post('report_from'));
+                $to_date   = to_sql_date($this->input->post('report_to'));
+                if ($from_date == $to_date) {
+                    $custom_date_select = 'AND ' . $field . ' = "' . $from_date . '"';
+                } else {
+                    $custom_date_select = 'AND (' . $field . ' BETWEEN "' . $from_date . '" AND "' . $to_date . '")';
+                }
+            }
+        }
+        return $custom_date_select;
+    }
     public function all_contacts()
     {
         if ($this->input->is_ajax_request()) {
@@ -197,7 +290,7 @@ class Clients extends AdminController
                             'longitude'      => "$client->longitude",
                             'mapMarkerTitle' => "$client->company",
                         ],
-                        ]);
+                    ]);
                 }
             }
 
@@ -365,9 +458,9 @@ class Clients extends AdminController
                 if (!is_customer_admin($customer_id)) {
                     header($_SERVER['SERVER_PROTOCOL'] . ' 400 Bad error');
                     echo json_encode([
-                            'success' => false,
-                            'message' => _l('access_denied'),
-                        ]);
+                        'success' => false,
+                        'message' => _l('access_denied'),
+                    ]);
                     die;
                 }
             }
@@ -397,21 +490,21 @@ class Clients extends AdminController
             if ($updated == true) {
                 $contact = $this->clients_model->get_contact($contact_id);
                 if (total_rows(db_prefix() . 'proposals', [
-                        'rel_type' => 'customer',
-                        'rel_id' => $contact->userid,
-                        'email' => $original_contact->email,
-                    ]) > 0 && ($original_contact->email != $contact->email)) {
+                    'rel_type' => 'customer',
+                    'rel_id' => $contact->userid,
+                    'email' => $original_contact->email,
+                ]) > 0 && ($original_contact->email != $contact->email)) {
                     $proposal_warning = true;
                     $original_email   = $original_contact->email;
                 }
             }
             echo json_encode([
-                    'success'             => $success,
-                    'proposal_warning'    => $proposal_warning,
-                    'message'             => $message,
-                    'original_email'      => $original_email,
-                    'has_primary_contact' => (total_rows(db_prefix() . 'contacts', ['userid' => $customer_id, 'is_primary' => 1]) > 0 ? true : false),
-                ]);
+                'success'             => $success,
+                'proposal_warning'    => $proposal_warning,
+                'message'             => $message,
+                'original_email'      => $original_email,
+                'has_primary_contact' => (total_rows(db_prefix() . 'contacts', ['userid' => $customer_id, 'is_primary' => 1]) > 0 ? true : false),
+            ]);
             die;
         }
 
@@ -696,8 +789,10 @@ class Clients extends AdminController
     public function zip_invoices($id)
     {
         $has_permission_view = has_permission('invoices', '', 'view');
-        if (!$has_permission_view && !has_permission('invoices', '', 'view_own')
-            && get_option('allow_staff_view_invoices_assigned') == '0') {
+        if (
+            !$has_permission_view && !has_permission('invoices', '', 'view_own')
+            && get_option('allow_staff_view_invoices_assigned') == '0'
+        ) {
             access_denied('Zip Customer Invoices');
         }
 
@@ -720,8 +815,10 @@ class Clients extends AdminController
     public function zip_estimates($id)
     {
         $has_permission_view = has_permission('estimates', '', 'view');
-        if (!$has_permission_view && !has_permission('estimates', '', 'view_own')
-            && get_option('allow_staff_view_estimates_assigned') == '0') {
+        if (
+            !$has_permission_view && !has_permission('estimates', '', 'view_own')
+            && get_option('allow_staff_view_estimates_assigned') == '0'
+        ) {
             access_denied('Zip Customer Estimates');
         }
 
@@ -744,18 +841,20 @@ class Clients extends AdminController
     {
         $has_permission_view = has_permission('payments', '', 'view');
 
-        if (!$has_permission_view && !has_permission('invoices', '', 'view_own')
-            && get_option('allow_staff_view_invoices_assigned') == '0') {
+        if (
+            !$has_permission_view && !has_permission('invoices', '', 'view_own')
+            && get_option('allow_staff_view_invoices_assigned') == '0'
+        ) {
             access_denied('Zip Customer Payments');
         }
 
         $this->load->library('app_bulk_pdf_export', [
-                'export_type'       => 'payments',
-                'payment_mode'      => $this->input->post('paymentmode'),
-                'date_from'         => $this->input->post('zip-from'),
-                'date_to'           => $this->input->post('zip-to'),
-                'redirect_on_error' => admin_url('clients/client/' . $id . '?group=payments'),
-            ]);
+            'export_type'       => 'payments',
+            'payment_mode'      => $this->input->post('paymentmode'),
+            'date_from'         => $this->input->post('zip-from'),
+            'date_to'           => $this->input->post('zip-to'),
+            'redirect_on_error' => admin_url('clients/client/' . $id . '?group=payments'),
+        ]);
 
         $this->app_bulk_pdf_export->set_client_id($id);
         $this->app_bulk_pdf_export->set_client_id_column(db_prefix() . 'clients.userid');
@@ -781,18 +880,20 @@ class Clients extends AdminController
         $this->load->library('import/import_customers', [], 'import');
 
         $this->import->setDatabaseFields($dbFields)
-                     ->setCustomFields(get_custom_fields('customers'));
+            ->setCustomFields(get_custom_fields('customers'));
 
         if ($this->input->post('download_sample') === 'true') {
             $this->import->downloadSample();
         }
 
-        if ($this->input->post()
-            && isset($_FILES['file_csv']['name']) && $_FILES['file_csv']['name'] != '') {
+        if (
+            $this->input->post()
+            && isset($_FILES['file_csv']['name']) && $_FILES['file_csv']['name'] != ''
+        ) {
             $this->import->setSimulation($this->input->post('simulate'))
-                          ->setTemporaryFileLocation($_FILES['file_csv']['tmp_name'])
-                          ->setFilename($_FILES['file_csv']['name'])
-                          ->perform();
+                ->setTemporaryFileLocation($_FILES['file_csv']['tmp_name'])
+                ->setFilename($_FILES['file_csv']['name'])
+                ->perform();
 
 
             $data['total_rows_post'] = $this->import->totalRows();

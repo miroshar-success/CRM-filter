@@ -32,7 +32,16 @@ class Estimates_model extends App_Model
     {
         return $this->db->query("SELECT DISTINCT(sale_agent) as sale_agent, CONCAT(firstname, ' ', lastname) as full_name FROM " . db_prefix() . 'estimates JOIN ' . db_prefix() . 'staff on ' . db_prefix() . 'staff.staffid=' . db_prefix() . 'estimates.sale_agent WHERE sale_agent != 0')->result_array();
     }
-
+    public function get_status_name()
+    {
+        return [
+            ["id" => 1, "name" => _l('estimate_status_draft')],
+            ["id" => 2, "name" => _l('estimate_status_sent')],
+            ["id" => 3, "name" => _l('estimate_status_declined')],
+            ["id" => 4, "name" => _l('estimate_status_accepted')],
+            ["id" => 5, "name" => _l('estimate_status_expired')],
+        ];
+    }
     /**
      * Get estimate/s
      * @param mixed $id estimate id

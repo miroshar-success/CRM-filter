@@ -156,6 +156,64 @@ if ($this->ci->input->post('my_customers')) {
     array_push($where, 'AND ' . db_prefix() . 'clients.userid IN (SELECT customer_id FROM ' . db_prefix() . 'customer_admins WHERE staff_id=' . get_staff_user_id() . ')');
 }
 
+//filter by source
+if(!isset($source) || empty($source))
+	$source=array('');
+if ($source && !in_array('',$source) && count($source) > 0) {
+    array_push($where, 'AND source IN (' . implode(',', $source) . ')');
+}
+
+//filter by country
+if(!isset($countries_) || empty($countries_))
+	$countries_=array('');
+if ($countries_ && !in_array('',$countries_) && count($countries_) > 0) {
+	if(in_array(-1,$countries_))//if country is unknown
+		$countries_[]=0;
+    array_push($where, 'AND country IN (' . implode(',', $countries_) . ')');
+}
+
+//filter by state
+if(!isset($states) || empty($states))
+	$states=array('');
+if ($states && !in_array('',$states) && count($states) > 0) {
+    $where_state	= 'state IN ("' . implode('","', $states).'")';
+	if(in_array(-1,$states))//if state is unknown
+		$where_state.= ' OR state=\'\' or state IS NULL';
+	array_push($where, 'AND ('. $where_state.')');
+}
+
+//filter by city
+if(!isset($cities) || empty($cities))
+	$cities=array('');
+if ($cities && !in_array('',$cities) && count($cities) > 0) {
+    $where_city	= 'city IN ("' . implode('","', $cities).'")';
+	if(in_array(-1,$cities))//if city is unknown
+		$where_city.= ' OR city=\'\' or city IS NULL';
+	array_push($where, 'AND ('. $where_city.')');
+}
+
+//filter by zip
+if(!isset($zips) || empty($zips))
+	$zips=array('');
+if ($zips && !in_array('',$zips) && count($zips) > 0) {
+    $where_zip	= 'zip IN ("' . implode('","', $zips).'")';
+	if(in_array(-1,$zips))//if zip is unknown
+		$where_zip.= ' OR zip=\'\' or zip IS NULL';
+	array_push($where, 'AND ('. $where_zip.')');
+}
+
+//filter by dates
+if(isset($custom_date_select) && $custom_date_select != '') {
+	array_push($where, $custom_date_select);
+};
+
+//filter by custom fields
+if(!empty($cf)){
+	foreach($cf as $_cf=>$value){
+		array_push($where, 'AND '.db_prefix() . 'clients.userid in (SELECT relid FROM '.db_prefix() . 'customfieldsvalues  where fieldid='.$_cf.' and value in ("'.implode('","',$value).'"))');
+	}
+}
+
 $aColumns = hooks()->apply_filters('customers_table_sql_columns', $aColumns);
 
 // Fix for big queries. Some hosting have max_join_limit

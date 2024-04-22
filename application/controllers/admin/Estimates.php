@@ -41,12 +41,39 @@ class Estimates extends AdminController
 
             $this->load->view('admin/estimates/pipeline/manage', $data);
         } else {
+            $selected_statuses = $this->input->post('statuses_');
+            if(empty($selected_statuses))
+                $selected_statuses = array('');
+            if ($this->input->post('report_months') != '')
+                $report_months = $this->input->post('report_months');
+            elseif ($this->input->post('report_months') == '' && $this->input->server('REQUEST_METHOD') !== 'POST')
+                $report_months = 'this_month'; //by default when loaded
+            else
+                $report_months = '';
+
+            if ($this->input->post('report_months_valid') != '')
+                $report_months_valid = $this->input->post('report_months_valid');
+            elseif ($this->input->post('report_months_valid') == '' && $this->input->server('REQUEST_METHOD') !== 'POST')
+                $report_months_valid = 'this_month'; //by default when loaded
+            else
+                $report_months_valid = '';
 
             // Pipeline was initiated but user click from home page and need to show table only to filter
             if ($this->input->get('status') || $this->input->get('filter') && $isPipeline) {
                 $this->pipeline(0, true);
             }
 
+            $data['report_months'] = $report_months;
+            $data['report_from'] = $this->input->post('report_from') == NULL ? '' : $this->input->post('report_from');
+            $data['report_to'] = $this->input->post('report_to') == NULL ? '' : $this->input->post('report_to');
+            $data['report_months_valid'] = $report_months_valid;
+            $data['report_from_valid'] = $this->input->post('report_from_valid') == NULL ? '' : $this->input->post('report_from_valid');
+            $data['report_to_valid'] = $this->input->post('report_to_valid') == NULL ? '' : $this->input->post('report_to_valid');
+            $data['selected_statuses']     = $selected_statuses;
+            $data['statuses']              = $this->estimates_model->get_status_name();
+            $data['list_custom_field'] = ['23'];
+            $data['total_min']             = $this->input->post('total_min') == NULL ? '' : $this->input->post('total_min');
+            $data['total_max']             = $this->input->post('total_max') == NULL ? '' : $this->input->post('total_max');
             $data['estimateid']            = $id;
             $data['switch_pipeline']       = true;
             $data['title']                 = _l('estimates');
@@ -62,12 +89,78 @@ class Estimates extends AdminController
         if (!has_permission('estimates', '', 'view') && !has_permission('estimates', '', 'view_own') && get_option('allow_staff_view_estimates_assigned') == '0') {
             ajax_access_denied();
         }
+        $data = $this->input->post();
+        $data['custom_date_select'] = '';
+        $data['custom_date_select_valid'] = '';
+        $date_by = 'date';
+        $date_by_valid = 'expirydate';
 
-        $this->app->get_table_data('estimates', [
-            'clientid' => $clientid,
-        ]);
+        if ($data['report_months'] != '') {
+            $report_months = $data['report_months'];
+            $data['custom_date_select'] = $this->get_where_report_period('DATE(' . $date_by . ')', $report_months, $date_by);
+        }
+
+        if ($data['report_months_valid'] != '') {
+            $report_months_valid = $data['report_months_valid'];
+            $data['custom_date_select_valid'] = $this->get_where_report_period('DATE(' . $date_by_valid . ')', $report_months_valid, $date_by_valid);
+        }
+        $data['perfex_version'] = (int)$this->app->get_current_db_version();
+        $data['clientid'] = $clientid;
+        $this->app->get_table_data('estimates', $data);
     }
 
+    private function get_where_report_period($field = 'date', $months_report = 'this_month', $date_type = 'date')
+    {
+        $custom_date_select = '';
+        if ($months_report != '') {
+            if (is_numeric($months_report)) {
+                // Last month
+                if ($months_report == '1') {
+                    $beginMonth = date('Y-m-01', strtotime('first day of last month'));
+                    $endMonth   = date('Y-m-t', strtotime('last day of last month'));
+                } else {
+                    $months_report = (int) $months_report;
+                    $months_report--;
+                    $beginMonth = date('Y-m-01', strtotime("-$months_report MONTH"));
+                    $endMonth   = date('Y-m-t');
+                }
+
+                $custom_date_select = 'AND (' . $field . ' BETWEEN "' . $beginMonth . '" AND "' . $endMonth . '")';
+            } elseif ($months_report == 'today') {
+                $custom_date_select = 'AND (' . $field . ' BETWEEN "' . date('Y-m-d') . '" AND "' . date('Y-m-d') . '")';
+            } elseif ($months_report == 'this_week') {
+                $custom_date_select = 'AND (' . $field . ' BETWEEN "' . date('Y-m-d', strtotime('monday this week')) . '" AND "' . date('Y-m-d', strtotime('sunday this week')) . '")';
+            } elseif ($months_report == 'last_week') {
+                $custom_date_select = 'AND (' . $field . ' BETWEEN "' . date('Y-m-d', strtotime('monday last week')) . '" AND "' . date('Y-m-d', strtotime('sunday last week')) . '")';
+            } elseif ($months_report == 'this_month') {
+                $custom_date_select = 'AND (' . $field . ' BETWEEN "' . date('Y-m-01') . '" AND "' . date('Y-m-t') . '")';
+            } elseif ($months_report == 'this_year') {
+                $custom_date_select = 'AND (' . $field . ' BETWEEN "' .
+                    date('Y-m-d', strtotime(date('Y-01-01'))) .
+                    '" AND "' .
+                    date('Y-m-d', strtotime(date('Y-12-31'))) . '")';
+            } elseif ($months_report == 'last_year') {
+                $custom_date_select = 'AND (' . $field . ' BETWEEN "' .
+                    date('Y-m-d', strtotime(date(date('Y', strtotime('last year')) . '-01-01'))) .
+                    '" AND "' .
+                    date('Y-m-d', strtotime(date(date('Y', strtotime('last year')) . '-12-31'))) . '")';
+            } elseif ($months_report == 'custom') {
+                $from_date = to_sql_date($this->input->post('report_from'));
+                $to_date   = to_sql_date($this->input->post('report_to'));
+                if ($date_type == "expirydate") {
+                    $from_date = to_sql_date($this->input->post('report_from_valid'));
+                    $to_date   = to_sql_date($this->input->post('report_to_valid'));
+                }
+                if ($from_date == $to_date) {
+                    $custom_date_select = 'AND ' . $field . ' = "' . $from_date . '"';
+                } else {
+                    $custom_date_select = 'AND (' . $field . ' BETWEEN "' . $from_date . '" AND "' . $to_date . '")';
+                }
+            }
+        }
+
+        return $custom_date_select;
+    }
     /* Add new estimate or update existing */
     public function estimate($id = '')
     {
