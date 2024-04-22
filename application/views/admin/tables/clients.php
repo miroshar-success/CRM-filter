@@ -50,6 +50,10 @@ if (count($groupIds) > 0) {
     array_push($filter, 'AND ' . db_prefix() . 'clients.userid IN (SELECT customer_id FROM ' . db_prefix() . 'customer_groups WHERE groupid IN (' . implode(', ', $groupIds) . '))');
 }
 
+if (!empty($groups_in) && count($groups_in) > 0) {
+    array_push($filter, 'AND ' . db_prefix() . 'clients.userid IN (SELECT customer_id FROM ' . db_prefix() . 'customer_groups WHERE groupid IN (' . implode(', ', $groups_in) . '))');
+}
+
 $countries  = $this->ci->clients_model->get_clients_distinct_countries();
 $countryIds = [];
 foreach ($countries as $country) {
@@ -154,13 +158,6 @@ if ($this->ci->input->post('exclude_inactive')) {
 
 if ($this->ci->input->post('my_customers')) {
     array_push($where, 'AND ' . db_prefix() . 'clients.userid IN (SELECT customer_id FROM ' . db_prefix() . 'customer_admins WHERE staff_id=' . get_staff_user_id() . ')');
-}
-
-//filter by source
-if(!isset($source) || empty($source))
-	$source=array('');
-if ($source && !in_array('',$source) && count($source) > 0) {
-    array_push($where, 'AND source IN (' . implode(',', $source) . ')');
 }
 
 //filter by country
