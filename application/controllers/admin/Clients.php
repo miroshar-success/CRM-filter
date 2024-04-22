@@ -42,9 +42,6 @@ class Clients extends AdminController
         $data['contacts_logged_in_today'] = $this->clients_model->get_contacts('', 'last_login LIKE "' . date('Y-m-d') . '%"' . $whereContactsLoggedIn);
 
         $data['countries'] = $this->clients_model->get_clients_distinct_countries();
-        $source = $this->input->post('source');
-        if (empty($source))
-            $source = array('');
         $country = $this->input->post('countries_');
         if (empty($country))
             $country = array('');
@@ -65,16 +62,15 @@ class Clients extends AdminController
         else
             $report_months = '';
 
-        $data['lead_sources']  = $this->leads_model->get_source();
 		$data['lead_countries']  = $this->si_lead_filter_model->get_leads_country_list();
 		$data['lead_cities']  = $this->si_lead_filter_model->get_leads_city_list();
 		$data['lead_states']  = $this->si_lead_filter_model->get_leads_state_list();
 		$data['lead_zips']  = $this->si_lead_filter_model->get_leads_zip_list();
-        $data['sources']  = $source;
         $data['countries_']  = $country;
         $data['cities']  = $city;
         $data['states']  = $state;
         $data['zips']  = $zip;
+        $data['selected_groups']  = $this->input->post('groups_in') == NULL ? '' : $this->input->post('groups_in');
         $data['report_months'] = $report_months;
         $data['report_from'] = $this->input->post('report_from') == NULL ? '' : $this->input->post('report_from');
         $data['report_to'] = $this->input->post('report_to') == NULL ? '' : $this->input->post('report_to');

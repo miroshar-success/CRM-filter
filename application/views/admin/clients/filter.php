@@ -7,6 +7,13 @@ $report_heading = '';
         <?php echo form_open($this->uri->uri_string() . ($this->input->get('filter_id') ? '?filter_id=' . $this->input->get('filter_id') : ''), "id=customer_form_filter"); ?>
         <div class="_filters _hidden_inputs">
             <div class="row">
+                <!--start group select -->
+                <div class="col-md-2  border-right">
+                    <label for="rel_type" class="control-label"><?php echo _l('kb_dt_group_name'); ?></label>
+                    <?php
+                    echo render_select('groups_in[]', $groups, ['id', 'name'], '', $selected_groups, ['multiple' => true, 'data-actions-box' => true, 'onchange' => "dt_custom_view(this.value,'.table-clients','groups'); return false;"], [], 'no-mbot', '', false); ?>
+                </div>
+                <!--end group select-->
                 <!--start country select -->
                 <div class="col-md-2  border-right mbot15">
                     <label for="rel_type" class="control-label"><?php echo _l('lead_country'); ?></label>
