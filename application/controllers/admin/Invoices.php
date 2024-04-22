@@ -20,15 +20,32 @@ class Invoices extends AdminController
     /* List all invoices datatables */
     public function list_invoices($id = '')
     {
-        if (!has_permission('invoices', '', 'view')
+        if (
+            !has_permission('invoices', '', 'view')
             && !has_permission('invoices', '', 'view_own')
-            && get_option('allow_staff_view_invoices_assigned') == '0') {
+            && get_option('allow_staff_view_invoices_assigned') == '0'
+        ) {
             access_denied('invoices');
         }
 
         close_setup_menu();
-
+        $selected_statuses = $this->input->post('statuses_');
+        if (empty($selected_statuses))
+            $selected_statuses = array('');
+        if ($this->input->post('report_months') != '')
+            $report_months = $this->input->post('report_months');
+        elseif ($this->input->post('report_months') == '' && $this->input->server('REQUEST_METHOD') !== 'POST')
+            $report_months = 'this_month'; //by default when loaded
+        else
+            $report_months = '';
         $this->load->model('payment_modes_model');
+        $data['report_months'] = $report_months;
+        $data['report_from'] = $this->input->post('report_from') == NULL ? '' : $this->input->post('report_from');
+        $data['report_to'] = $this->input->post('report_to') == NULL ? '' : $this->input->post('report_to');
+        $data['selected_statuses']     = $selected_statuses;
+        $data['statuses']              = $this->invoices_model->get_status_name();
+        $data['list_custom_field']     = ['28', '29'];
+
         $data['payment_modes']        = $this->payment_modes_model->get('', [], true);
         $data['invoiceid']            = $id;
         $data['title']                = _l('invoices');
@@ -42,9 +59,11 @@ class Invoices extends AdminController
     /* List all recurring invoices */
     public function recurring($id = '')
     {
-        if (!has_permission('invoices', '', 'view')
+        if (
+            !has_permission('invoices', '', 'view')
             && !has_permission('invoices', '', 'view_own')
-            && get_option('allow_staff_view_invoices_assigned') == '0') {
+            && get_option('allow_staff_view_invoices_assigned') == '0'
+        ) {
             access_denied('invoices');
         }
 
@@ -59,21 +78,77 @@ class Invoices extends AdminController
 
     public function table($clientid = '')
     {
-        if (!has_permission('invoices', '', 'view')
+        if (
+            !has_permission('invoices', '', 'view')
             && !has_permission('invoices', '', 'view_own')
-            && get_option('allow_staff_view_invoices_assigned') == '0') {
+            && get_option('allow_staff_view_invoices_assigned') == '0'
+        ) {
             ajax_access_denied();
         }
+        $data = $this->input->post();
+        $data['custom_date_select'] = '';
+        $date_by = 'date';
 
+        if ($data['report_months'] != '') {
+            $report_months = $data['report_months'];
+            $data['custom_date_select'] = $this->get_where_report_period('DATE(' . $date_by . ')', $report_months, $date_by);
+        }
         $this->load->model('payment_modes_model');
         $data['payment_modes'] = $this->payment_modes_model->get('', [], true);
-
+        $data['clientid'] = $clientid;
         $this->app->get_table_data(($this->input->get('recurring') ? 'recurring_invoices' : 'invoices'), [
             'clientid' => $clientid,
-            'data'     => $data,
+            'data' => $data
         ]);
     }
+    private function get_where_report_period($field = 'date', $months_report = 'this_month', $date_type = 'date')
+    {
+        $custom_date_select = '';
+        if ($months_report != '') {
+            if (is_numeric($months_report)) {
+                // Last month
+                if ($months_report == '1') {
+                    $beginMonth = date('Y-m-01', strtotime('first day of last month'));
+                    $endMonth   = date('Y-m-t', strtotime('last day of last month'));
+                } else {
+                    $months_report = (int) $months_report;
+                    $months_report--;
+                    $beginMonth = date('Y-m-01', strtotime("-$months_report MONTH"));
+                    $endMonth   = date('Y-m-t');
+                }
 
+                $custom_date_select = 'AND (' . $field . ' BETWEEN "' . $beginMonth . '" AND "' . $endMonth . '")';
+            } elseif ($months_report == 'today') {
+                $custom_date_select = 'AND (' . $field . ' BETWEEN "' . date('Y-m-d') . '" AND "' . date('Y-m-d') . '")';
+            } elseif ($months_report == 'this_week') {
+                $custom_date_select = 'AND (' . $field . ' BETWEEN "' . date('Y-m-d', strtotime('monday this week')) . '" AND "' . date('Y-m-d', strtotime('sunday this week')) . '")';
+            } elseif ($months_report == 'last_week') {
+                $custom_date_select = 'AND (' . $field . ' BETWEEN "' . date('Y-m-d', strtotime('monday last week')) . '" AND "' . date('Y-m-d', strtotime('sunday last week')) . '")';
+            } elseif ($months_report == 'this_month') {
+                $custom_date_select = 'AND (' . $field . ' BETWEEN "' . date('Y-m-01') . '" AND "' . date('Y-m-t') . '")';
+            } elseif ($months_report == 'this_year') {
+                $custom_date_select = 'AND (' . $field . ' BETWEEN "' .
+                    date('Y-m-d', strtotime(date('Y-01-01'))) .
+                    '" AND "' .
+                    date('Y-m-d', strtotime(date('Y-12-31'))) . '")';
+            } elseif ($months_report == 'last_year') {
+                $custom_date_select = 'AND (' . $field . ' BETWEEN "' .
+                    date('Y-m-d', strtotime(date(date('Y', strtotime('last year')) . '-01-01'))) .
+                    '" AND "' .
+                    date('Y-m-d', strtotime(date(date('Y', strtotime('last year')) . '-12-31'))) . '")';
+            } elseif ($months_report == 'custom') {
+                $from_date = to_sql_date($this->input->post('report_from'));
+                $to_date   = to_sql_date($this->input->post('report_to'));
+                if ($from_date == $to_date) {
+                    $custom_date_select = 'AND ' . $field . ' = "' . $from_date . '"';
+                } else {
+                    $custom_date_select = 'AND (' . $field . ' BETWEEN "' . $from_date . '" AND "' . $to_date . '")';
+                }
+            }
+        }
+
+        return $custom_date_select;
+    }
     public function client_change_data($customer_id, $current_invoice = '')
     {
         if ($this->input->is_ajax_request()) {
@@ -409,9 +484,11 @@ class Invoices extends AdminController
     /* Get all invoice data used when user click on invoiec number in a datatable left side*/
     public function get_invoice_data_ajax($id)
     {
-        if (!has_permission('invoices', '', 'view')
+        if (
+            !has_permission('invoices', '', 'view')
             && !has_permission('invoices', '', 'view_own')
-            && get_option('allow_staff_view_invoices_assigned') == '0') {
+            && get_option('allow_staff_view_invoices_assigned') == '0'
+        ) {
             echo _l('access_denied');
             die;
         }
@@ -484,9 +561,9 @@ class Invoices extends AdminController
         $total_credits_applied = 0;
         foreach ($this->input->post('amount') as $credit_id => $amount) {
             $success = $this->credit_notes_model->apply_credits($credit_id, [
-            'invoice_id' => $invoice_id,
-            'amount'     => $amount,
-        ]);
+                'invoice_id' => $invoice_id,
+                'amount'     => $amount,
+            ]);
             if ($success) {
                 $total_credits_applied++;
             }

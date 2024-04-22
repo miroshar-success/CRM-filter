@@ -121,6 +121,7 @@
             </div>
         </div>
     </div>
+    <?php $this->load->view('admin/invoices/filter'); ?>
     <div class="row">
         <div class="col-md-12" id="small-table">
             <div class="panel_s">

@@ -50,7 +50,17 @@ class Invoices_model extends App_Model
     {
         return $this->db->query('SELECT DISTINCT(sale_agent) as sale_agent, CONCAT(firstname, \' \', lastname) as full_name FROM ' . db_prefix() . 'invoices JOIN ' . db_prefix() . 'staff ON ' . db_prefix() . 'staff.staffid=' . db_prefix() . 'invoices.sale_agent WHERE sale_agent != 0')->result_array();
     }
-
+    public function get_status_name()
+    {
+        return [
+            ["id" => 1, "name" => _l('invoice_status_unpaid')],
+            ["id" => 2, "name" => _l('invoice_status_paid')],
+            ["id" => 3, "name" => _l('invoice_status_not_paid_completely')],
+            ["id" => 4, "name" => _l('invoice_status_overdue')],
+            ["id" => 5, "name" => _l('invoice_status_cancelled')],
+            ["id" => 5, "name" => _l('invoice_status_draft')],
+        ];
+    }
     public function get_unpaid_invoices()
     {
         if (!staff_can('view', 'invoices')) {
