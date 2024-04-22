@@ -30,4 +30,11 @@
     }
   });
 
+  $('input[name="report_to"]').on("change", function () {
+    if ($('input[name="report_from"]').val() != "") {
+      $(".table-invoices").DataTable().ajax.reload();
+      return false;
+    }
+  });
+
 })(jQuery);

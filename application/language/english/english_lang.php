@@ -2927,6 +2927,7 @@ $lang['estimate_due_after']                                      = 'Estimate Due
 # Version 1.6.0
 $lang['my_timesheets']                                   = 'My Timesheets';
 $lang['today']                                           = 'Today';
+$lang['tomorrow']                                        = 'Tomorrow';
 $lang['open_in_dropbox']                                 = 'Open In Dropbox';
 $lang['show_primary_contact']                            = 'Show primary contact full name on %s';
 $lang['view_members_timesheets']                         = 'View all timesheets';

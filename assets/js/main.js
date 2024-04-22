@@ -2222,7 +2222,7 @@ $(function () {
   if (table_tasks.length) {
     var TasksServerParams = {},
       Tasks_Filters;
-    Tasks_Filters = $("._hidden_inputs._filters._tasks_filters input");
+    Tasks_Filters = $("._hidden_inputs._filters input, ._hidden_inputs._filters select");
     $.each(Tasks_Filters, function () {
       TasksServerParams[$(this).attr("name")] =
         '[name="' + $(this).attr("name") + '"]';
@@ -2235,7 +2235,7 @@ $(function () {
     if ($("body").hasClass("tasks-page")) {
       tasksTableURL += "?bulk_actions=true";
     }
-
+console.log(TasksServerParams);
     _table_api = initDataTable(
       table_tasks,
       tasksTableURL,

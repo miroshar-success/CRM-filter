@@ -27,6 +27,38 @@ $join  = [];
 include_once(APPPATH . 'views/admin/tables/includes/tasks_filter.php');
 
 array_push($where, 'AND CASE WHEN rel_type="project" AND rel_id IN (SELECT project_id FROM ' . db_prefix() . 'project_settings WHERE project_id=rel_id AND name="hide_tasks_on_main_tasks_table" AND value=1) THEN rel_type != "project" ELSE 1=1 END');
+//filter by dates
+if (isset($custom_date_select) && $custom_date_select != '') {
+    array_push($where, $custom_date_select);
+};
+//filter by due date
+if (isset($custom_date_select_valid) && $custom_date_select_valid != '') {
+    array_push($where, $custom_date_select_valid);
+};
+//filter by custom fields
+if (!empty($cf)) {
+    foreach ($cf as $_cf => $value) {
+        array_push($where, 'AND ' . db_prefix() . 'tasks.id in (SELECT relid FROM ' . db_prefix() . 'customfieldsvalues  where fieldid=' . $_cf . ' and value in ("' . implode('","', $value) . '"))');
+    }
+}
+//filter by status field
+if (!isset($statuses_) || empty($statuses_))
+    $statuses_ = array('');
+if ($statuses_ && !in_array('', $statuses_) && count($statuses_) > 0) {
+    array_push($where, 'AND ' . db_prefix() . 'tasks.status IN (' . implode(',', $statuses_) . ')');
+}
+//filter by priority field
+if (!isset($priority_) || empty($priority_))
+    $priority_ = array('');
+if ($priority_ && !in_array('', $priority_) && count($priority_) > 0) {
+    array_push($where, 'AND ' . db_prefix() . 'tasks.priority IN (' . implode(',', $priority_) . ')');
+}
+//filter by assigned field
+if (!isset($assigned_) || empty($assigned_))
+    $assigned_ = array('');
+if ($assigned_ && !in_array('', $assigned_) && count($assigned_) > 0) {
+    array_push($where, 'AND (' . db_prefix() . 'tasks.id IN (SELECT taskid FROM ' . db_prefix() . 'task_assigned WHERE staffid IN (' . implode(', ', $assigned_) . ')))');
+}
 
 $custom_fields = get_table_custom_fields('tasks');
 

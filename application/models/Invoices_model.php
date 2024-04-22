@@ -58,7 +58,7 @@ class Invoices_model extends App_Model
             ["id" => 3, "name" => _l('invoice_status_not_paid_completely')],
             ["id" => 4, "name" => _l('invoice_status_overdue')],
             ["id" => 5, "name" => _l('invoice_status_cancelled')],
-            ["id" => 5, "name" => _l('invoice_status_draft')],
+            ["id" => 6, "name" => _l('invoice_status_draft')],
         ];
     }
     public function get_unpaid_invoices()

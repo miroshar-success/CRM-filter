@@ -56,4 +56,18 @@
       return false;
     }
   });
+
+  $('input[name="report_to"]').on("change", function () {
+    if ($('input[name="report_from"]').val() != "") {
+      $(".table-proposals").DataTable().ajax.reload();
+      return false;
+    }
+  });
+
+  $('input[name="report_to_valid"]').on("change", function () {
+    if ($('input[name="report_from_valid"]').val() != "") {
+      $(".table-proposals").DataTable().ajax.reload();
+      return false;
+    }
+  });
 })(jQuery);
