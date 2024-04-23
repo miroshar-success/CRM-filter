@@ -61,7 +61,7 @@ class Clients extends AdminController
             $report_months = 'this_month'; //by default when loaded
         else
             $report_months = '';
-
+        $list_custom_field = $this->get_custom_field_ids('customers');
 		$data['lead_countries']  = $this->si_lead_filter_model->get_leads_country_list();
 		$data['lead_cities']  = $this->si_lead_filter_model->get_leads_city_list();
 		$data['lead_states']  = $this->si_lead_filter_model->get_leads_state_list();
@@ -74,10 +74,27 @@ class Clients extends AdminController
         $data['report_months'] = $report_months;
         $data['report_from'] = $this->input->post('report_from') == NULL ? '' : $this->input->post('report_from');
         $data['report_to'] = $this->input->post('report_to') == NULL ? '' : $this->input->post('report_to');
-        $data['list_custom_field'] = ["8", "9", "10", "11", "12", "14", "16", "26", "27", "40", "41", "43"];
+        $data['list_custom_field'] = $list_custom_field;
         $this->load->view('admin/clients/manage', $data);
     }
-
+    public function get_custom_field_ids($fieldto = "customers")
+    {
+        $this->db->select('id, name');
+        $this->db->from(db_prefix().'customfields');
+        $this->db->where('fieldto', $fieldto);
+        $this->db->where('active', 1);
+        $query = $this->db->get();
+        $ids=array();
+        if ($query->num_rows() > 0) {
+            $results = $query->result_array();
+            foreach ($results as $row) {
+                if($row['name']!=='Qtà vetture totale'){
+                    $ids[] = $row['id'];
+                }
+            }
+        }
+        return $ids;
+    }
     public function table()
     {
         if (!has_permission('customers', '', 'view')) {

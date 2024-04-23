@@ -39,12 +39,13 @@ class Invoices extends AdminController
         else
             $report_months = '';
         $this->load->model('payment_modes_model');
+        $list_custom_field = $this->get_custom_field_ids('invoice');
         $data['report_months'] = $report_months;
         $data['report_from'] = $this->input->post('report_from') == NULL ? '' : $this->input->post('report_from');
         $data['report_to'] = $this->input->post('report_to') == NULL ? '' : $this->input->post('report_to');
         $data['selected_statuses']     = $selected_statuses;
         $data['statuses']              = $this->invoices_model->get_status_name();
-        $data['list_custom_field']     = ['29'];
+        $data['list_custom_field']     = $list_custom_field;
         $data['total_min']             = $this->input->post('total_min') == NULL ? '' : $this->input->post('total_min');
         $data['total_max']             = $this->input->post('total_max') == NULL ? '' : $this->input->post('total_max');
         $data['payment_modes']        = $this->payment_modes_model->get('', [], true);
@@ -97,10 +98,48 @@ class Invoices extends AdminController
         $this->load->model('payment_modes_model');
         $data['payment_modes'] = $this->payment_modes_model->get('', [], true);
         $data['clientid'] = $clientid;
+        $total_quantity_id = $this->get_totalquatity_id('invoice');
+        $data['total_quantity_id'] = !empty($total_quantity_id) ? $total_quantity_id[0] : '';
+
         $this->app->get_table_data(($this->input->get('recurring') ? 'recurring_invoices' : 'invoices'), [
             'clientid' => $clientid,
             'data' => $data
         ]);
+    }
+    public function get_custom_field_ids($fieldto = "invoice")
+    {
+        $this->db->select('id, name');
+        $this->db->from(db_prefix().'customfields');
+        $this->db->where('fieldto', $fieldto);
+        $this->db->where('active', 1);
+        $query = $this->db->get();
+        $ids=array();
+        if ($query->num_rows() > 0) {
+            $results = $query->result_array();
+            foreach ($results as $row) {
+                if($row['name']!=='Qtà vetture totale'){
+                    $ids[] = $row['id'];
+                }
+            }
+        }
+        return $ids;
+    }
+    public function get_totalquatity_id($fieldto = "invoice")
+    {
+        $this->db->select('id');
+        $this->db->from(db_prefix().'customfields');
+        $this->db->where('fieldto', $fieldto);
+        $this->db->where('name', 'Qtà vetture totale');
+        $this->db->where('active', 1);
+        $query = $this->db->get();
+        $ids=array();
+        if ($query->num_rows() > 0) {
+            $results = $query->result_array();
+            foreach ($results as $row) {
+                $ids[] = $row['id'];
+            }
+        }
+        return $ids;
     }
     private function get_where_report_period($field = 'date', $months_report = 'this_month', $date_type = 'date')
     {

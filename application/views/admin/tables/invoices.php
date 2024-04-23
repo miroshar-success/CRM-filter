@@ -114,8 +114,8 @@ if (!empty($data['cf'])) {
     }
 }
 
-if (!empty($data['total_min']) && !empty($data['total_max'])) {
-    $where[] = 'AND ' . db_prefix() . 'invoices.id IN (SELECT relid FROM ' . db_prefix() . 'customfieldsvalues WHERE fieldid = "28" AND fieldto = "invoice" AND value BETWEEN ' . $data['total_min'] . ' AND ' . $data['total_max'] . ')';
+if (!empty($data['total_min']) && !empty($data['total_max'] && !empty($data['total_quantity_id']))) {
+    $where[] = 'AND ' . db_prefix() . 'invoices.id IN (SELECT relid FROM ' . db_prefix() . 'customfieldsvalues WHERE fieldid=' . $data['total_quantity_id'] . ' AND fieldto = "invoice" AND value BETWEEN ' . $data['total_min'] . ' AND ' . $data['total_max'] . ')';
 }
 
 if (!has_permission('invoices', '', 'view')) {

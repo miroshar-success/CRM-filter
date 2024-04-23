@@ -53,6 +53,7 @@ class Tasks extends AdminController
             $report_months_valid = 'this_month'; //by default when loaded
         else
             $report_months_valid = '';
+            $list_custom_field = $this->get_custom_field_ids('tasks');
         $data['report_from'] = $this->input->post('report_from') == NULL ? '' : $this->input->post('report_from');
         $data['report_to'] = $this->input->post('report_to') == NULL ? '' : $this->input->post('report_to');
         $data['report_months_valid'] = $report_months_valid;
@@ -63,7 +64,7 @@ class Tasks extends AdminController
         $data['selected_priority']     = $selected_priority;
         $data['selected_assigned']     = $selected_assigned;
         $data['priority']              = $this->tasks_model->get_priority_name();
-        $data['list_custom_field']     = ['34'];
+        $data['list_custom_field']     = $list_custom_field;
         $data['title'] = _l('tasks');
         $tasks_filter_assignees = $this->misc_model->get_tasks_distinct_assignees();
         $tasks_assignees = [];
@@ -79,7 +80,41 @@ class Tasks extends AdminController
         $data['tasks_assignees'] = $tasks_assignees;
         $this->load->view('admin/tasks/manage', $data);
     }
-
+    public function get_custom_field_ids($fieldto = "tasks")
+    {
+        $this->db->select('id, name');
+        $this->db->from(db_prefix().'customfields');
+        $this->db->where('fieldto', $fieldto);
+        $this->db->where('active', 1);
+        $query = $this->db->get();
+        $ids=array();
+        if ($query->num_rows() > 0) {
+            $results = $query->result_array();
+            foreach ($results as $row) {
+                if($row['name']!=='Qtà vetture totale'){
+                    $ids[] = $row['id'];
+                }
+            }
+        }
+        return $ids;
+    }
+    public function get_totalquatity_id($fieldto = "tasks")
+    {
+        $this->db->select('id');
+        $this->db->from(db_prefix().'customfields');
+        $this->db->where('fieldto', $fieldto);
+        $this->db->where('name', 'Qtà vetture totale');
+        $this->db->where('active', 1);
+        $query = $this->db->get();
+        $ids=array();
+        if ($query->num_rows() > 0) {
+            $results = $query->result_array();
+            foreach ($results as $row) {
+                $ids[] = $row['id'];
+            }
+        }
+        return $ids;
+    }
     public function table()
     {
         $data = $this->input->post();

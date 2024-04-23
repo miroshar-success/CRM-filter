@@ -62,7 +62,7 @@ class Estimates extends AdminController
             if ($this->input->get('status') || $this->input->get('filter') && $isPipeline) {
                 $this->pipeline(0, true);
             }
-
+            $list_custom_field = $this->get_custom_field_ids('estimate');
             $data['report_months'] = $report_months;
             $data['report_from'] = $this->input->post('report_from') == NULL ? '' : $this->input->post('report_from');
             $data['report_to'] = $this->input->post('report_to') == NULL ? '' : $this->input->post('report_to');
@@ -71,7 +71,7 @@ class Estimates extends AdminController
             $data['report_to_valid'] = $this->input->post('report_to_valid') == NULL ? '' : $this->input->post('report_to_valid');
             $data['selected_statuses']     = $selected_statuses;
             $data['statuses']              = $this->estimates_model->get_status_name();
-            $data['list_custom_field'] = ['23'];
+            $data['list_custom_field']     = $list_custom_field;
             $data['total_min']             = $this->input->post('total_min') == NULL ? '' : $this->input->post('total_min');
             $data['total_max']             = $this->input->post('total_max') == NULL ? '' : $this->input->post('total_max');
             $data['estimateid']            = $id;
@@ -83,7 +83,41 @@ class Estimates extends AdminController
             $this->load->view('admin/estimates/manage', $data);
         }
     }
-
+    public function get_custom_field_ids($fieldto = "estimate")
+    {
+        $this->db->select('id, name');
+        $this->db->from(db_prefix().'customfields');
+        $this->db->where('fieldto', $fieldto);
+        $this->db->where('active', 1);
+        $query = $this->db->get();
+        $ids=array();
+        if ($query->num_rows() > 0) {
+            $results = $query->result_array();
+            foreach ($results as $row) {
+                if($row['name']!=='Qtà vetture totale'){
+                    $ids[] = $row['id'];
+                }
+            }
+        }
+        return $ids;
+    }
+    public function get_totalquatity_id($fieldto = "estimate")
+    {
+        $this->db->select('id');
+        $this->db->from(db_prefix().'customfields');
+        $this->db->where('fieldto', $fieldto);
+        $this->db->where('name', 'Qtà vetture totale');
+        $this->db->where('active', 1);
+        $query = $this->db->get();
+        $ids=array();
+        if ($query->num_rows() > 0) {
+            $results = $query->result_array();
+            foreach ($results as $row) {
+                $ids[] = $row['id'];
+            }
+        }
+        return $ids;
+    }
     public function table($clientid = '')
     {
         if (!has_permission('estimates', '', 'view') && !has_permission('estimates', '', 'view_own') && get_option('allow_staff_view_estimates_assigned') == '0') {
@@ -106,6 +140,8 @@ class Estimates extends AdminController
         }
         $data['perfex_version'] = (int)$this->app->get_current_db_version();
         $data['clientid'] = $clientid;
+        $total_quantity_id = $this->get_totalquatity_id('estimate');
+        $data['total_quantity_id']     = !empty($total_quantity_id) ? $total_quantity_id[0] : '';
         $this->app->get_table_data('estimates', $data);
     }
 
