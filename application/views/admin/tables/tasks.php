@@ -13,7 +13,7 @@ $aColumns = [
     'status',
     'startdate',
     'duedate',
-     get_sql_select_task_asignees_full_names() . ' as assignees',
+    get_sql_select_task_asignees_full_names() . ' as assignees',
     '(SELECT GROUP_CONCAT(name SEPARATOR ",") FROM ' . db_prefix() . 'taggables JOIN ' . db_prefix() . 'tags ON ' . db_prefix() . 'taggables.tag_id = ' . db_prefix() . 'tags.id WHERE rel_id = ' . db_prefix() . 'tasks.id and rel_type="task" ORDER by tag_order ASC) as tags',
     'priority',
 ];
@@ -61,11 +61,12 @@ if ($assigned_ && !in_array('', $assigned_) && count($assigned_) > 0) {
 }
 
 $custom_fields = get_table_custom_fields('tasks');
-
 foreach ($custom_fields as $key => $field) {
     $selectAs = (is_cf_date($field) ? 'date_picker_cvalue_' . $key : 'cvalue_' . $key);
+    $order_by = ($city_id != '' && $field['id'] == $city_id) ? ' ORDER BY value ASC' : '';
+    $selectValue = '(SELECT value FROM ' . db_prefix() . 'customfieldsvalues WHERE ' . db_prefix() . 'customfieldsvalues.relid=' . db_prefix() . 'tasks.id AND ' . db_prefix() . 'customfieldsvalues.fieldid=' . $field['id'] . ' AND ' . db_prefix() . 'customfieldsvalues.fieldto="' . $field['fieldto'] . '"' . $order_by . ' LIMIT 1) as ' . $selectAs;
     array_push($customFieldsColumns, $selectAs);
-    array_push($aColumns, '(SELECT value FROM ' . db_prefix() . 'customfieldsvalues WHERE ' . db_prefix() . 'customfieldsvalues.relid=' . db_prefix() . 'tasks.id AND ' . db_prefix() . 'customfieldsvalues.fieldid=' . $field['id'] . ' AND ' . db_prefix() . 'customfieldsvalues.fieldto="' . $field['fieldto'] . '" LIMIT 1) as ' . $selectAs);
+    array_push($aColumns, $selectValue);
 }
 
 $aColumns = hooks()->apply_filters('tasks_table_sql_columns', $aColumns);

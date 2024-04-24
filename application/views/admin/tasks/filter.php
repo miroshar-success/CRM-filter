@@ -148,8 +148,10 @@ $report_heading_valid = '';
                         <option value="today"><?php echo _l('today'); ?></option>
                         <option value="tomorrow"><?php echo _l('tomorrow'); ?></option>
                         <option value="this_week"><?php echo _l('this_week'); ?></option>
+                        <option value="next_week"><?php echo _l('next_week'); ?></option>
                         <option value="last_week"><?php echo _l('last_week'); ?></option>
                         <!-- <option value="this_month"><?php echo _l('this_month'); ?></option> -->
+                        <option value="next_month"><?php echo _l('next_month'); ?></option>
                         <option value="1"><?php echo _l('last_month'); ?></option>
                         <option value="this_year"><?php echo _l('this_year'); ?></option>
                         <option value="last_year"><?php echo _l('last_year'); ?></option>
@@ -171,10 +173,20 @@ $report_heading_valid = '';
                             case 'this_week':
                                 $report_heading_valid .= _d(date('d-m-Y', strtotime('monday this week'))) . " To " . _d(date('d-m-Y', strtotime('sunday this week')));
                                 break;
+                            case 'next_week':
+                                $next_week_start = strtotime('next week');
+                                $next_week_end = strtotime('sunday', $next_week_start);
+                                $report_heading_valid .= _d(date('d-m-Y', $next_week_start)) . " To " . _d(date('d-m-Y', $next_week_end));
+                                break;
                             case 'last_week':
                                 $report_heading_valid .= _d(date('d-m-Y', strtotime('monday last week'))) . " To " . _d(date('d-m-Y', strtotime('sunday last week')));
                                 break;
                                 // case 'this_month':$report_heading_valid.=_d(date('01-m-Y'))." To "._d(date('t-m-Y'));break;
+                            case 'next_month':
+                                $next_month_start = strtotime('first day of next month');
+                                $next_month_end = strtotime('last day of next month');
+                                $report_heading_valid .= _d(date('d-m-Y', $next_month_start)) . " To " . _d(date('d-m-Y', $next_month_end));
+                                break;
                             case '1':
                                 $report_heading_valid .= _d(date('01-m-Y', strtotime('-1 month'))) . " To " . _d(date('t-m-Y', strtotime('-1 month')));
                                 break;

@@ -14,14 +14,6 @@ $report_heading = '';
                     echo render_select('groups_in[]', $groups, ['id', 'name'], '', $selected_groups, ['multiple' => true, 'data-actions-box' => true, 'onchange' => "dt_custom_view(this.value,'.table-clients','groups'); return false;"], [], 'no-mbot', '', false); ?>
                 </div>
                 <!--end group select-->
-                <!--start country select -->
-                <div class="col-md-2  border-right mbot15">
-                    <label for="rel_type" class="control-label"><?php echo _l('lead_country'); ?></label>
-                    <?php
-                    $lead_countries[] = array('id' => -1, 'name' => _l('si_lf_unknown'));
-                    echo render_select('countries_[]', $lead_countries, array('id', 'name'), '', $countries_, array('data-width' => '100%', 'data-none-selected-text' => _l('leads_all'), 'multiple' => true, 'data-actions-box' => true, 'onchange' => "dt_custom_view(this.value,'.table-clients','countries_'); return false;"), array(), 'no-mbot', '', false); ?>
-                </div>
-                <!--end counry select-->
                 <!--start states -->
                 <div class="col-md-2 border-right mbot15">
                     <label for="states" class="control-label"><?php echo _l('lead_state'); ?></label>
@@ -79,6 +71,30 @@ $report_heading = '';
                 }
                 ?>
                 <!--ended for custom field-->
+                <!-- start Prossimi Rinnovi div -->
+                <div id="date-range-upcoming" class="col-md-4 mbot15" id="date_by_wrapper">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label for="report_from" class="control-label"><?php echo _l('Upcoming Renewal From'); ?></label>
+                            <div class="input-group date">
+                                <input type="text" class="form-control datepicker" id="upcoming_from" name="upcoming_from" value="<?php echo htmlspecialchars($upcoming_from); ?>" autocomplete="off">
+                                <div class="input-group-addon">
+                                    <i class="fa fa-calendar calendar-icon"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 border-right">
+                            <label for="report_to" class="control-label"><?php echo _l('Upcoming Renewal To'); ?></label>
+                            <div class="input-group date">
+                                <input type="text" class="form-control datepicker" id="upcoming_to" name="upcoming_to" autocomplete="off">
+                                <div class="input-group-addon">
+                                    <i class="fa fa-calendar calendar-icon"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- end Prossimi Rinnovi div -->
                 <!-- start date time div -->
                 <div class="col-md-2 form-group border-right mbot15" id="report-time">
                     <label for="months-report"><?php echo _l('clients_estimate_dt_date'); ?></label><br />
@@ -160,6 +176,34 @@ $report_heading = '';
                     </div>
                 </div>
                 <!-- end date time div -->
+                <!-- start Credit Max -->
+                <div class="col-md-2 text-center1 border-right mbot15">
+                    <label for="creditMax_from" class="control-label"><?php echo _l('credit_max_from'); ?></label>
+                    <div class="input-group">
+                        <input type="number" value="<?php isset($creditMax_from) && !empty($creditMax_from) ? $creditMax_from : ''; ?>" min="0" class="form-control" id="creditMax_from" name="creditMax_from" autocomplete="off">
+                    </div>
+                </div>
+                <div class="col-md-2 text-center1 border-right mbot15">
+                    <label for="creditMax_to" class="control-label"><?php echo _l('credit_max_to'); ?></label>
+                    <div class="input-group">
+                        <input type="number" value="<?php isset($creditMax_to) && !empty($creditMax_to) ? $creditMax_to : ''; ?>" min="0" class="form-control" id="creditMax_to" name="creditMax_to" autocomplete="off">
+                    </div>
+                </div>
+                <!-- end Credit Max -->
+                <!-- start Credit Score -->
+                <div class="col-md-2 text-center1 border-right mbot15">
+                    <label for="creditScore_from" class="control-label"><?php echo _l('credit_score_from'); ?></label>
+                    <div class="input-group">
+                        <input type="number" value="<?php isset($creditScore_from) && !empty($creditScore_from) ? $creditScore_from : ''; ?>" min="0" class="form-control" id="creditScore_from" name="creditScore_from" autocomplete="off">
+                    </div>
+                </div>
+                <div class="col-md-2 text-center1 border-right mbot15">
+                    <label for="creditScore_to" class="control-label"><?php echo _l('credit_score_to'); ?></label>
+                    <div class="input-group">
+                        <input type="number" value="<?php isset($creditScore_to) && !empty($creditScore_to) ? $creditScore_to : ''; ?>" min="0" class="form-control" id="creditScore_to" name="creditScore_to" autocomplete="off">
+                    </div>
+                </div>
+                <!-- end Credit Score -->
             </div>
         </div>
         <?php echo form_close(); ?>

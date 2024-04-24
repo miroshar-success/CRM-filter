@@ -387,6 +387,18 @@
         <?php
         }
         ?>
+        <?php
+        if ($upcoming_from !== '') {
+        ?>
+            $('#upcoming_from').val("<?php echo htmlspecialchars($upcoming_from); ?>");
+        <?php
+        }
+        if ($upcoming_to !== '') {
+        ?>
+            $('#upcoming_to').val("<?php echo htmlspecialchars($upcoming_to); ?>");
+        <?php
+        }
+        ?>
         var CustomersServerParams = {};
         $.each($('._hidden_inputs._filters input, ._hidden_inputs._filters select'), function() {
             CustomersServerParams[$(this).attr('name')] = '[name="' + $(this).attr('name') + '"]';

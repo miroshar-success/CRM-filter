@@ -33,4 +33,40 @@
       return false;
     }
   });
+  $('input[name="upcoming_from"]').on("change", function () {
+    if ($('input[name="upcoming_to"]').val() != "") {
+      $(".table-clients").DataTable().ajax.reload();
+      return false;
+    }
+  });
+  $('input[name="upcoming_to"]').on("change", function () {
+    if ($('input[name="upcoming_from"]').val() != "") {
+      $(".table-clients").DataTable().ajax.reload();
+      return false;
+    }
+  });
+  $('input[name="creditMax_from"]').on("change", function () {
+    if ($('input[name="creditMax_to"]').val() != -1) {
+      $(".table-clients").DataTable().ajax.reload();
+      return false;
+    }
+  });
+  $('input[name="creditMax_to"]').on("change", function () {
+    if ($('input[name="creditMax_from"]').val() != -1) {
+      $(".table-clients").DataTable().ajax.reload();
+      return false;
+    }
+  });
+  $('input[name="creditScore_from"]').on("change", function () {
+    if ($('input[name="creditScore_to"]').val() != -1) {
+      $(".table-clients").DataTable().ajax.reload();
+      return false;
+    }
+  });
+  $('input[name="creditScore_to"]').on("change", function () {
+    if ($('input[name="creditScore_from"]').val() != -1) {
+      $(".table-clients").DataTable().ajax.reload();
+      return false;
+    }
+  });
 })(jQuery);

@@ -88,6 +88,10 @@ $lang['clients_notes_table_addedfrom_heading']   = 'Added From';
 $lang['clients_notes_table_dateadded_heading']   = 'Date Added';
 $lang['clients_list_full_name']                  = 'Full Name';
 $lang['clients_list_last_login']                 = 'Last Login';
+$lang['credit_max_from']                         = 'Credit Max From';
+$lang['credit_max_to']                           = 'Credit Max To';
+$lang['credit_score_from']                       = 'Credit Score From';
+$lang['credit_score_to']                         = 'Credit Score To';
 
 # Contracts
 $lang['contracts']                = 'Contracts';
@@ -1380,6 +1384,8 @@ $lang['shipping_state']                     = 'State';
 $lang['shipping_zip']                       = 'Zip Code';
 $lang['shipping_country']                   = 'Country';
 $lang['get_shipping_from_customer_profile'] = 'Get shipping details from customer profile';
+$lang['total_car_quantity_from']            = 'Total car quantity From';
+$lang['total_car_quantity_to']              = 'Total car quantity To';
 
 # Customer
 $lang['customer_default_currency']                             = 'Default Currency';
@@ -2952,8 +2958,10 @@ $lang['show_less']                                       = 'Show less';
 $lang['project_completed_date']                          = 'Completed Date';
 $lang['language']                                        = 'Language';
 $lang['this_week']                                       = 'This Week';
+$lang['next_week']                                       = 'Next Week';
 $lang['last_week']                                       = 'Last Week';
 $lang['this_month']                                      = 'This Month';
+$lang['next_month']                                      = 'Next Month';
 $lang['last_month']                                      = 'Last Month';
 $lang['no_description_project']                          = 'No description for this project';
 $lang['sales_string']                                    = 'Sales';

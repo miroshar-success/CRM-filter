@@ -27,6 +27,40 @@
 </div>
 <?php init_tail(); ?>
 <script>
+$(document).ready(function() {
+    $('#custom_fields\\[estimate\\]\\[25\\]').val(1);
+    $('.table.estimate-items-table > * > tr > :where(*:nth-child(8)) input[name="quantity"] ').focusout(function() {
+        var newValue = $(this).val(); // Get the value of .qq
+        $('#custom_fields\\[estimate\\]\\[25\\]').val(newValue);
+    });
+});
+$(document).ready(function() {
+    // Count the number of elements with class "input-group-addon"
+    var count = $('.input-group-addon').length;
+
+    // Add a class to each element with the prefix "L" followed by the count
+    $('.input-group-addon').each(function(index) {
+        $(this).addClass('L' + (index + 1));
+    });
+});
+
+$(document).ready(function() {
+    var number = $('.input-group input[name="number"]').val();
+        var prefix_year = $('.input-group #prefix_year').text().replace(/\s/g, '');
+        var beforez = $('.L1').text().replace(/\s/g, '');
+        // var newValueid = beforez + number +'-'+ prefix_year;
+        var newValueid = number +'-'+ prefix_year;
+        $('#custom_fields\\[estimate\\]\\[47\\]').val(newValueid);
+
+    $('.input-group input[name="number"]').change(function() {
+        var number = $('.input-group input[name="number"]').val();
+        var prefix_year = $('.input-group #prefix_year').text().replace(/\s/g, '');
+        var beforez = $('.L1').text().replace(/\s/g, '');
+        // var newValueid = beforez + number +'-'+ prefix_year;
+        var newValueid = number +'-'+ prefix_year;
+        $('#custom_fields\\[estimate\\]\\[47\\]').val(newValueid);
+    });
+});
 $(function() {
     validate_estimate_form();
     // Init accountacy currency symbol
@@ -38,5 +72,5 @@ $(function() {
 });
 </script>
 </body>
-
 </html>
+

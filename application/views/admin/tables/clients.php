@@ -210,6 +210,28 @@ if(!empty($cf)){
 		array_push($where, 'AND '.db_prefix() . 'clients.userid in (SELECT relid FROM '.db_prefix() . 'customfieldsvalues  where fieldid='.$_cf.' and value in ("'.implode('","',$value).'"))');
 	}
 }
+// filter by upcoming field
+if (!empty($upcoming_from) && !empty($upcoming_to) && !empty($upcoming_fieldid)) {
+    $timestamp_f = strtotime(str_replace('/', '-', $upcoming_from));
+    $timestamp_t = strtotime(str_replace('/', '-', $upcoming_to));
+    $formattedDate_f = date('Y-m-d', $timestamp_f);
+    $formattedDate_t = date('Y-m-d', $timestamp_t);
+    $where[] = 'AND ' . db_prefix() . 'clients.userid IN (SELECT relid FROM ' . db_prefix() . 'customfieldsvalues WHERE fieldid = ' . $upcoming_fieldid . ' AND fieldto = "customers" AND STR_TO_DATE(value, "%Y-%m-%d") BETWEEN "' . $formattedDate_f . '" AND "' . $formattedDate_t . '")';
+}
+// filter by Credit Max field
+if (!empty($creditMax_from) && !empty($creditMax_to && !empty($creditMax_fieldid))) {
+    $where[] = 'AND ' . db_prefix() . 'clients.userid IN (
+        SELECT relid
+        FROM ' . db_prefix() . 'customfieldsvalues
+        WHERE fieldid = ' . $creditMax_fieldid . '
+            AND fieldto = "customers"
+            AND CAST(SUBSTRING_INDEX(value, "€", -1) AS DECIMAL(10, 2)) BETWEEN ' . $creditMax_from . ' AND ' . $creditMax_to . '
+    )';
+}
+// filter by Credit Score field
+if (!empty($creditScore_from) && !empty($creditScore_to && !empty($creditScore_fieldid))) {
+    $where[] = 'AND ' . db_prefix() . 'clients.userid IN (SELECT relid FROM ' . db_prefix() . 'customfieldsvalues WHERE fieldid=' . $creditScore_fieldid . ' AND fieldto = "customers" AND value BETWEEN ' . $creditScore_from . ' AND ' . $creditScore_to . ')';
+}
 
 $aColumns = hooks()->apply_filters('customers_table_sql_columns', $aColumns);
 
