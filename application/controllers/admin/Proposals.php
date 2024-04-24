@@ -42,7 +42,7 @@ class Proposals extends AdminController
             $this->load->view('admin/proposals/pipeline/manage', $data);
         } else {
             $selected_statuses = $this->input->post('statuses_');
-            if(empty($selected_statuses))
+            if (empty($selected_statuses))
                 $selected_statuses = array('');
             if ($this->input->post('report_months') != '')
                 $report_months = $this->input->post('report_months');
@@ -61,6 +61,8 @@ class Proposals extends AdminController
             if ($this->input->get('status') && $isPipeline) {
                 $this->pipeline(0, true);
             }
+            $list_custom_field = $this->get_custom_field_ids('proposal');
+
             $data['report_months'] = $report_months;
             $data['report_from'] = $this->input->post('report_from') == NULL ? '' : $this->input->post('report_from');
             $data['report_to'] = $this->input->post('report_to') == NULL ? '' : $this->input->post('report_to');
@@ -77,11 +79,46 @@ class Proposals extends AdminController
             $data['proposal_statuses']     = $this->proposals_model->get_statuses();
             $data['proposals_sale_agents'] = $this->proposals_model->get_sale_agents();
             $data['years']                 = $this->proposals_model->get_proposals_years();
-            $data['list_custom_field'] = ['30', '33'];
+            $data['list_custom_field']     = $list_custom_field;
+
             $this->load->view('admin/proposals/manage', $data);
         }
     }
-
+    public function get_custom_field_ids($fieldto = "proposal")
+    {
+        $this->db->select('id, name');
+        $this->db->from(db_prefix().'customfields');
+        $this->db->where('fieldto', $fieldto);
+        $this->db->where('active', 1);
+        $query = $this->db->get();
+        $ids=array();
+        if ($query->num_rows() > 0) {
+            $results = $query->result_array();
+            foreach ($results as $row) {
+                if($row['name']!=='Qtà vetture totale'){
+                    $ids[] = $row['id'];
+                }
+            }
+        }
+        return $ids;
+    }
+    public function get_totalquatity_id($fieldto = "proposal")
+    {
+        $this->db->select('id');
+        $this->db->from(db_prefix().'customfields');
+        $this->db->where('fieldto', $fieldto);
+        $this->db->where('name', 'Qtà vetture totale');
+        $this->db->where('active', 1);
+        $query = $this->db->get();
+        $ids=array();
+        if ($query->num_rows() > 0) {
+            $results = $query->result_array();
+            foreach ($results as $row) {
+                $ids[] = $row['id'];
+            }
+        }
+        return $ids;
+    }
     public function table()
     {
         if (
@@ -107,6 +144,8 @@ class Proposals extends AdminController
             $data['custom_date_select_valid'] = $this->get_where_report_period('DATE(' . $date_by_valid . ')', $report_months_valid, $date_by_valid);
         }
         $data['perfex_version'] = (int)$this->app->get_current_db_version();
+        $total_quantity_id = $this->get_totalquatity_id('proposal');
+        $data['total_quantity_id']     = !empty($total_quantity_id) ? $total_quantity_id[0] : '';
         $this->app->get_table_data('proposals', $data);
     }
 

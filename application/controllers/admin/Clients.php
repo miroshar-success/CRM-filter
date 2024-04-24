@@ -61,7 +61,7 @@ class Clients extends AdminController
             $report_months = 'this_month'; //by default when loaded
         else
             $report_months = '';
-
+        $list_custom_field = $this->get_custom_field_ids('customers');
 		$data['lead_countries']  = $this->si_lead_filter_model->get_leads_country_list();
 		$data['lead_cities']  = $this->si_lead_filter_model->get_leads_city_list();
 		$data['lead_states']  = $this->si_lead_filter_model->get_leads_state_list();
@@ -74,10 +74,38 @@ class Clients extends AdminController
         $data['report_months'] = $report_months;
         $data['report_from'] = $this->input->post('report_from') == NULL ? '' : $this->input->post('report_from');
         $data['report_to'] = $this->input->post('report_to') == NULL ? '' : $this->input->post('report_to');
-        $data['list_custom_field'] = ["8", "9", "10", "11", "12", "14", "16", "26", "27", "40", "41", "43"];
+        $data['upcoming_from'] = $this->input->post('upcoming_from') == NULL ? '' : $this->input->post('upcoming_from');
+        $data['upcoming_to'] = $this->input->post('upcoming_to') == NULL ? '' : $this->input->post('upcoming_to');
+        $data['creditMax_from'] = $this->input->post('creditMax_from') == NULL ? '' : $this->input->post('creditMax_from');
+        $data['creditMax_to'] = $this->input->post('creditMax_to') == NULL ? '' : $this->input->post('creditMax_to');
+        $data['creditScore_from'] = $this->input->post('creditScore_from') == NULL ? '' : $this->input->post('creditScore_from');
+        $data['creditScore_to'] = $this->input->post('creditScore_to') == NULL ? '' : $this->input->post('creditScore_to');
+        $data['list_custom_field'] = $list_custom_field;
         $this->load->view('admin/clients/manage', $data);
     }
-
+    public function get_custom_field_ids($fieldto = "customers")
+    {
+        $this->db->select('id, name');
+        $this->db->from(db_prefix().'customfields');
+        $this->db->where('fieldto', $fieldto);
+        $this->db->where('active', 1);
+        $query = $this->db->get();
+        $ids=array();
+        if ($query->num_rows() > 0) {
+            $results = $query->result_array();
+            foreach ($results as $row) {
+                if(
+                    $row['name']!=='Qtà vetture totale' &&
+                    $row['name']!=='Prossimi Rinnovi' &&
+                    $row['name']!=='Credit Max' &&
+                    $row['name']!=='Credit Score'
+                ){
+                    $ids[] = $row['id'];
+                }
+            }
+        }
+        return $ids;
+    }
     public function table()
     {
         if (!has_permission('customers', '', 'view')) {
@@ -87,6 +115,7 @@ class Clients extends AdminController
         }
         $data = $this->input->post();
 		$data['custom_date_select'] = '';
+        $data['upcoming_date_select'] = '';
 		$date_by = db_prefix() . 'clients.datecreated';
 
 		if ($data['report_months']!=''){
@@ -94,9 +123,29 @@ class Clients extends AdminController
 			$data['custom_date_select'] = $this->get_where_report_period('DATE('.$date_by.')',$report_months);
 		}
 		$data['perfex_version'] = (int)$this->app->get_current_db_version();
+        $data['upcoming_fieldid'] = $this->get_customize_custom_id('customers', 'Prossimi Rinnovi');
+        $data['creditMax_fieldid'] = $this->get_customize_custom_id('customers', 'Credit Max');
+        $data['creditScore_fieldid'] = $this->get_customize_custom_id('customers', 'Credit Score');
         $this->app->get_table_data('clients', $data);
     }
 
+    public function get_customize_custom_id($fieldto = "customers", $name="")
+    {
+        $this->db->select('id');
+        $this->db->from(db_prefix().'customfields');
+        $this->db->where('fieldto', $fieldto);
+        $this->db->where('name', $name);
+        $this->db->where('active', 1);
+        $query = $this->db->get();
+        $ids=array();
+        if ($query->num_rows() > 0) {
+            $results = $query->result_array();
+            foreach ($results as $row) {
+                $ids[] = $row['id'];
+            }
+        }
+        return $ids[0];
+    }
     public function get_where_report_period($field = 'date', $months_report = 'this_month')
     {
         $custom_date_select = '';

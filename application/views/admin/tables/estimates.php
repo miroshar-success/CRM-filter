@@ -110,8 +110,8 @@ if (!empty($cf)) {
     }
 }
 
-if (!empty($total_min) && !empty($total_max)) {
-    $where[] = 'AND ' . db_prefix() . 'estimates.id IN (SELECT relid FROM ' . db_prefix() . 'customfieldsvalues WHERE fieldid = "25" AND fieldto = "estimate" AND value BETWEEN ' . $total_min . ' AND ' . $total_max . ')';
+if (!empty($total_min) && !empty($total_max && !empty($total_quantity_id))) {
+    $where[] = 'AND ' . db_prefix() . 'estimates.id IN (SELECT relid FROM ' . db_prefix() . 'customfieldsvalues WHERE fieldid = ' . $total_quantity_id . ' AND fieldto = "estimate" AND value BETWEEN ' . $total_min . ' AND ' . $total_max . ')';
 }
 
 if (!has_permission('estimates', '', 'view')) {

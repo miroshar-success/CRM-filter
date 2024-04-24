@@ -53,6 +53,7 @@ class Tasks extends AdminController
             $report_months_valid = 'this_month'; //by default when loaded
         else
             $report_months_valid = '';
+        $list_custom_field = $this->get_custom_field_ids('tasks')['ids'];
         $data['report_from'] = $this->input->post('report_from') == NULL ? '' : $this->input->post('report_from');
         $data['report_to'] = $this->input->post('report_to') == NULL ? '' : $this->input->post('report_to');
         $data['report_months_valid'] = $report_months_valid;
@@ -63,8 +64,8 @@ class Tasks extends AdminController
         $data['selected_priority']     = $selected_priority;
         $data['selected_assigned']     = $selected_assigned;
         $data['priority']              = $this->tasks_model->get_priority_name();
-        $data['list_custom_field']     = ['34'];
-        $data['title'] = _l('tasks');
+        $data['list_custom_field']     = $list_custom_field;
+        $data['title']                 = _l('tasks');
         $tasks_filter_assignees = $this->misc_model->get_tasks_distinct_assignees();
         $tasks_assignees = [];
         foreach ($tasks_filter_assignees as $subArray) {
@@ -79,7 +80,48 @@ class Tasks extends AdminController
         $data['tasks_assignees'] = $tasks_assignees;
         $this->load->view('admin/tasks/manage', $data);
     }
-
+    public function get_custom_field_ids($fieldto = "tasks")
+    {
+        $this->db->select('id, name');
+        $this->db->from(db_prefix().'customfields');
+        $this->db->where('fieldto', $fieldto);
+        $this->db->where('active', 1);
+        $query = $this->db->get();
+        $ids=array();
+        $city_id = '';
+        if ($query->num_rows() > 0) {
+            $results = $query->result_array();
+            foreach ($results as $row) {
+                if($row['name']!=='Qtà vetture totale' && $row['name']!=='Volume'){
+                    $ids[] = $row['id'];
+                }
+                if($row['name'] == 'Città') {
+                    $city_id = $row['id'];
+                }
+            }
+        }
+        return array(
+            'ids' =>  $ids,
+            'city_id' => $city_id
+        );
+    }
+    public function get_totalquatity_id($fieldto = "tasks")
+    {
+        $this->db->select('id');
+        $this->db->from(db_prefix().'customfields');
+        $this->db->where('fieldto', $fieldto);
+        $this->db->where('name', 'Qtà vetture totale');
+        $this->db->where('active', 1);
+        $query = $this->db->get();
+        $ids=array();
+        if ($query->num_rows() > 0) {
+            $results = $query->result_array();
+            foreach ($results as $row) {
+                $ids[] = $row['id'];
+            }
+        }
+        return $ids;
+    }
     public function table()
     {
         $data = $this->input->post();
@@ -91,6 +133,8 @@ class Tasks extends AdminController
             $report_months_valid = $data['report_months_valid'];
             $data['custom_date_select_valid'] = $this->get_where_report_period_valid('DATE(' . $due_date . ')', $report_months_valid, $due_date);
         }
+        $city_id = $this->get_custom_field_ids('tasks')['city_id'];
+        $data['city_id'] = $city_id;
         $this->app->get_table_data('tasks', $data);
     }
     private function get_where_report_period_valid($field = 'date', $months_report = 'this_month', $date_type = 'date')
@@ -116,10 +160,18 @@ class Tasks extends AdminController
                 $custom_date_select = 'AND (' . $field . ' BETWEEN "' . date('Y-m-d', strtotime('+1 day')) . '" AND "' . date('Y-m-d', strtotime('+1 day')) . '")';
             } elseif ($months_report == 'this_week') {
                 $custom_date_select = 'AND (' . $field . ' BETWEEN "' . date('Y-m-d', strtotime('monday this week')) . '" AND "' . date('Y-m-d', strtotime('sunday this week')) . '")';
+            } elseif ($months_report == 'next_week') {
+                $next_week_start = strtotime('next week');
+                $next_week_end = strtotime('sunday', $next_week_start);
+                $custom_date_select = 'AND (' . $field . ' BETWEEN "' . date('Y-m-d', strtotime('next week')) . '" AND "' . date('Y-m-d', strtotime($next_week_end)) . '")';
             } elseif ($months_report == 'last_week') {
                 $custom_date_select = 'AND (' . $field . ' BETWEEN "' . date('Y-m-d', strtotime('monday last week')) . '" AND "' . date('Y-m-d', strtotime('sunday last week')) . '")';
             } elseif ($months_report == 'this_month') {
                 $custom_date_select = 'AND (' . $field . ' BETWEEN "' . date('Y-m-01') . '" AND "' . date('Y-m-t') . '")';
+            } elseif ($months_report == 'next_month') {
+                $next_month_start = strtotime('first day of next month');
+                $next_month_end = strtotime('last day of next month');
+                $custom_date_select = 'AND (' . $field . ' BETWEEN "' . date('Y-m-d', strtotime($next_month_start)) . '" AND "' . date('Y-m-d', strtotime($next_month_end)) . '")';
             } elseif ($months_report == 'this_year') {
                 $custom_date_select = 'AND (' . $field . ' BETWEEN "' .
                     date('Y-m-d', strtotime(date('Y-01-01'))) .
