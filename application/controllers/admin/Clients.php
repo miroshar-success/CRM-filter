@@ -76,6 +76,8 @@ class Clients extends AdminController
         $data['report_to'] = $this->input->post('report_to') == NULL ? '' : $this->input->post('report_to');
         $data['upcoming_from'] = $this->input->post('upcoming_from') == NULL ? '' : $this->input->post('upcoming_from');
         $data['upcoming_to'] = $this->input->post('upcoming_to') == NULL ? '' : $this->input->post('upcoming_to');
+        $data['safe_from'] = $this->input->post('safe_from') == NULL ? '' : $this->input->post('safe_from');
+        $data['safe_to'] = $this->input->post('safe_to') == NULL ? '' : $this->input->post('safe_to');
         $data['creditMax_from'] = $this->input->post('creditMax_from') == NULL ? '' : $this->input->post('creditMax_from');
         $data['creditMax_to'] = $this->input->post('creditMax_to') == NULL ? '' : $this->input->post('creditMax_to');
         $data['creditScore_from'] = $this->input->post('creditScore_from') == NULL ? '' : $this->input->post('creditScore_from');
@@ -98,7 +100,8 @@ class Clients extends AdminController
                     $row['name']!=='Qtà vetture totale' &&
                     $row['name']!=='Prossimi Rinnovi' &&
                     $row['name']!=='Credit Max' &&
-                    $row['name']!=='Credit Score'
+                    $row['name']!=='Credit Score' &&
+                    $row['name']!=='Data Credit Safe'
                 ){
                     $ids[] = $row['id'];
                 }
@@ -116,6 +119,7 @@ class Clients extends AdminController
         $data = $this->input->post();
 		$data['custom_date_select'] = '';
         $data['upcoming_date_select'] = '';
+        $data['safe_date_select'] = '';
 		$date_by = db_prefix() . 'clients.datecreated';
 
 		if ($data['report_months']!=''){
@@ -126,6 +130,7 @@ class Clients extends AdminController
         $data['upcoming_fieldid'] = $this->get_customize_custom_id('customers', 'Prossimi Rinnovi');
         $data['creditMax_fieldid'] = $this->get_customize_custom_id('customers', 'Credit Max');
         $data['creditScore_fieldid'] = $this->get_customize_custom_id('customers', 'Credit Score');
+        $data['safe_fieldid'] = $this->get_customize_custom_id('customers', 'Data Credit Safe');
         $this->app->get_table_data('clients', $data);
     }
 

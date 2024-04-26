@@ -75,7 +75,7 @@ $report_heading = '';
                 <div id="date-range-upcoming" class="col-md-4 mbot15" id="date_by_wrapper">
                     <div class="row">
                         <div class="col-md-6">
-                            <label for="report_from" class="control-label"><?php echo _l('Upcoming Renewal From'); ?></label>
+                            <label for="report_from" class="control-label"><?php echo _l('upcoming_renewal_from'); ?></label>
                             <div class="input-group date">
                                 <input type="text" class="form-control datepicker" id="upcoming_from" name="upcoming_from" value="<?php echo htmlspecialchars($upcoming_from); ?>" autocomplete="off">
                                 <div class="input-group-addon">
@@ -84,7 +84,7 @@ $report_heading = '';
                             </div>
                         </div>
                         <div class="col-md-6 border-right">
-                            <label for="report_to" class="control-label"><?php echo _l('Upcoming Renewal To'); ?></label>
+                            <label for="report_to" class="control-label"><?php echo _l('upcoming_renewal_to'); ?></label>
                             <div class="input-group date">
                                 <input type="text" class="form-control datepicker" id="upcoming_to" name="upcoming_to" autocomplete="off">
                                 <div class="input-group-addon">
@@ -204,6 +204,30 @@ $report_heading = '';
                     </div>
                 </div>
                 <!-- end Credit Score -->
+                <!-- start Data Credit Safe -->
+                <div id="date-range-safe" class="col-md-4 mbot15" id="date_by_wrapper">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label for="report_from" class="control-label"><?php echo _l('data_credit_safe_from'); ?></label>
+                            <div class="input-group date">
+                                <input type="text" class="form-control datepicker" id="safe_from" name="safe_from" value="<?php echo htmlspecialchars($safe_from); ?>" autocomplete="off">
+                                <div class="input-group-addon">
+                                    <i class="fa fa-calendar calendar-icon"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 border-right">
+                            <label for="report_to" class="control-label"><?php echo _l('data_credit_safe_to'); ?></label>
+                            <div class="input-group date">
+                                <input type="text" class="form-control datepicker" id="safe_to" name="safe_to" autocomplete="off">
+                                <div class="input-group-addon">
+                                    <i class="fa fa-calendar calendar-icon"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- end Data Credit Safe -->
             </div>
         </div>
         <?php echo form_close(); ?>

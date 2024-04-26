@@ -45,6 +45,18 @@
       return false;
     }
   });
+  $('input[name="safe_from"]').on("change", function () {
+    if ($('input[name="safe_to"]').val() != "") {
+      $(".table-clients").DataTable().ajax.reload();
+      return false;
+    }
+  });
+  $('input[name="safe_to"]').on("change", function () {
+    if ($('input[name="safe_from"]').val() != "") {
+      $(".table-clients").DataTable().ajax.reload();
+      return false;
+    }
+  });
   $('input[name="creditMax_from"]').on("change", function () {
     if ($('input[name="creditMax_to"]').val() != -1) {
       $(".table-clients").DataTable().ajax.reload();
