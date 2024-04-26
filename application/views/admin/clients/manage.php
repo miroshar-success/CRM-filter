@@ -399,6 +399,18 @@
         <?php
         }
         ?>
+        <?php
+        if ($safe_from !== '') {
+        ?>
+            $('#safe_from').val("<?php echo htmlspecialchars($safe_from); ?>");
+        <?php
+        }
+        if ($safe_to !== '') {
+        ?>
+            $('#safe_to').val("<?php echo htmlspecialchars($safe_to); ?>");
+        <?php
+        }
+        ?>
         var CustomersServerParams = {};
         $.each($('._hidden_inputs._filters input, ._hidden_inputs._filters select'), function() {
             CustomersServerParams[$(this).attr('name')] = '[name="' + $(this).attr('name') + '"]';

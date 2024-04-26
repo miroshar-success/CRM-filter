@@ -92,6 +92,10 @@ $lang['credit_max_from']                         = 'Credit Max From';
 $lang['credit_max_to']                           = 'Credit Max To';
 $lang['credit_score_from']                       = 'Credit Score From';
 $lang['credit_score_to']                         = 'Credit Score To';
+$lang['data_credit_safe_from']                   = 'Data Credit Safe From';
+$lang['data_credit_safe_to']                     = 'Data Credit Safe To';
+$lang['upcoming_renewal_from']                   = 'Upcoming Renewal From';
+$lang['upcoming_renewal_to']                     = 'Upcoming Renewal To';
 
 # Contracts
 $lang['contracts']                = 'Contracts';

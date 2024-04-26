@@ -17,7 +17,7 @@ defined('BASEPATH') or exit('No direct script access allowed');
 * environments.
 *
 */
-define('APP_BASE_URL', 'http://localhost:1025/');
+define('APP_BASE_URL', 'http://localhost:8012/');
 
 /*
 * --------------------------------------------------------------------------
@@ -50,7 +50,7 @@ define('APP_DB_PASSWORD', '');
 /**
  * The name of the database you want to connect to
  */
-define('APP_DB_NAME', 'crm_test');
+define('APP_DB_NAME', 'crm_new');
 
 /**
  * @since  2.3.0

@@ -218,6 +218,16 @@ if (!empty($upcoming_from) && !empty($upcoming_to) && !empty($upcoming_fieldid))
     $formattedDate_t = date('Y-m-d', $timestamp_t);
     $where[] = 'AND ' . db_prefix() . 'clients.userid IN (SELECT relid FROM ' . db_prefix() . 'customfieldsvalues WHERE fieldid = ' . $upcoming_fieldid . ' AND fieldto = "customers" AND STR_TO_DATE(value, "%Y-%m-%d") BETWEEN "' . $formattedDate_f . '" AND "' . $formattedDate_t . '")';
 }
+
+// filter by safe field
+if (!empty($safe_from) && !empty($safe_to) && !empty($safe_fieldid)) {
+    $timestamp_f = strtotime(str_replace('/', '-', $safe_from));
+    $timestamp_t = strtotime(str_replace('/', '-', $safe_to));
+    $formattedDate_f = date('Y-m-d', $timestamp_f);
+    $formattedDate_t = date('Y-m-d', $timestamp_t);
+    $where[] = 'AND ' . db_prefix() . 'clients.userid IN (SELECT relid FROM ' . db_prefix() . 'customfieldsvalues WHERE fieldid = ' . $safe_fieldid . ' AND fieldto = "customers" AND STR_TO_DATE(value, "%Y-%m-%d") BETWEEN "' . $formattedDate_f . '" AND "' . $formattedDate_t . '")';
+}
+
 // filter by Credit Max field
 if (!empty($creditMax_from) && !empty($creditMax_to && !empty($creditMax_fieldid))) {
     $where[] = 'AND ' . db_prefix() . 'clients.userid IN (
