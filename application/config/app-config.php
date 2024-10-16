@@ -17,7 +17,7 @@ defined('BASEPATH') or exit('No direct script access allowed');
 * environments.
 *
 */
-define('APP_BASE_URL', 'http://localhost:8012/');
+define('APP_BASE_URL', 'http://localhost/');
 
 /*
 * --------------------------------------------------------------------------
@@ -38,7 +38,7 @@ define('APP_ENC_KEY', '63a04c59afac194e76df5b2906f5b0f6');
  * Database Credentials
  * The hostname of your database server
  */
-define('APP_DB_HOSTNAME', 'localhost');
+define('APP_DB_HOSTNAME', '127.0.0.1');
 /**
  * The username used to connect to the database
  */
@@ -46,11 +46,11 @@ define('APP_DB_USERNAME', 'root');
 /**
  * The password used to connect to the database
  */
-define('APP_DB_PASSWORD', '');
+define('APP_DB_PASSWORD', 'admin123');
 /**
  * The name of the database you want to connect to
  */
-define('APP_DB_NAME', 'crm_new');
+define('APP_DB_NAME', 'dbcft2gesxloua');
 
 /**
  * @since  2.3.0

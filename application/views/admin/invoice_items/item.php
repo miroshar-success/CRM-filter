@@ -17,6 +17,10 @@
                         <div class="alert alert-warning affect-warning hide">
                             <?php echo _l('changing_items_affect_warning'); ?>
                         </div>
+                        <div class="form-group d-flex align-items-center">
+                            <input type="checkbox" id="technical_invoice_item" name="technical_invoice_item" value="0">
+                            <label for="technical_invoice_item" class="control-label ml-2 mb-0"><?=  _l('invoice_item_technical_checkbox') ?></label>
+                        </div>
                         <?php echo render_input('description', 'invoice_item_add_edit_description'); ?>
                         <?php echo render_textarea('long_description', 'invoice_item_long_description'); ?>
                         <div class="form-group">
@@ -158,12 +162,16 @@ function init_item_js() {
         var $itemModal = $('#sales_item_modal');
         $('input[name="itemid"]').val('');
         $itemModal.find('input').not('input[type="hidden"]').val('');
+        $itemModal.find('input[name="technical_invoice_item"]').val("0");
         $itemModal.find('textarea').val('');
         $itemModal.find('select').selectpicker('val', '').selectpicker('refresh');
         $('select[name="tax2"]').selectpicker('val', '').change();
         $('select[name="tax"]').selectpicker('val', '').change();
         $itemModal.find('.add-title').removeClass('hide');
         $itemModal.find('.edit-title').addClass('hide');
+        $itemModal.find('input[name="technical_invoice_item"]').prop('checked', false);
+        $itemModal.find('input[name="technical_invoice_item"]').val("0");
+        $('#rate').closest('.form-group').nextAll('.form-group, div').show();
 
         var id = $(event.relatedTarget).data('id');
         // If id found get the text from the datatable
@@ -173,6 +181,15 @@ function init_item_js() {
             $('input[name="itemid"]').val(id);
 
             requestGetJSON('invoice_items/get_item_by_id/' + id).done(function (response) {
+                if (response.technical_invoice_item == 1) {
+                    $itemModal.find('input[name="technical_invoice_item"]').prop('checked', true);
+                    $itemModal.find('input[name="technical_invoice_item"]').val("1");
+                    $('#rate').closest('.form-group').nextAll('.form-group, div').hide();
+                } else {
+                    $itemModal.find('input[name="technical_invoice_item"]').prop('checked', false);
+                    $itemModal.find('input[name="technical_invoice_item"]').val("0");
+                    $('#rate').closest('.form-group').nextAll('.form-group, div').show();
+                }
                 $itemModal.find('input[name="description"]').val(response.description);
                 $itemModal.find('textarea[name="long_description"]').val(response.long_description.replace(/(<|<)br\s*\/*(>|>)/g, " "));
                 $itemModal.find('input[name="rate"]').val(response.rate);
@@ -198,6 +215,39 @@ function init_item_js() {
             });
 
         }
+
+        // On checkbox change
+        $('input[name="technical_invoice_item"]').on('change', function() {
+            var $itemModal = $('#sales_item_modal');
+            var relid = $('input[name="itemid"]').val();
+            if(relid == '') relid = 0;
+            if ($(this).is(':checked')) {
+                // Hide all form-group and div elements after the form-group containing #rate
+                $.ajax({
+                    url: 'invoice_items/render_custom_fields/' + relid + '/' + true,
+                    type: 'GET',
+                    success: function(response) {
+                        $('#custom_fields_items').html(response);
+                        init_selectpicker();
+                    }
+                });
+            
+                $('#rate').closest('.form-group').nextAll('.form-group, div').hide();
+                $itemModal.find('input[name="technical_invoice_item"]').val("1");
+            } else {
+                // Show all form-group and div elements after the form-group containing #rate
+                $('#rate').closest('.form-group').nextAll('.form-group, div').show();
+                $.ajax({
+                    url: 'invoice_items/render_custom_fields/' + relid,
+                    type: 'GET',
+                    success: function(response) {
+                        $('#custom_fields_items').html(response);
+                        init_selectpicker();
+                    }
+                });
+                $itemModal.find('input[name="technical_invoice_item"]').val("0");            
+            }
+        });
     });
 
     $("body").on("hidden.bs.modal", '#sales_item_modal', function (event) {

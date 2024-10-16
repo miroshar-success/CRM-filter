@@ -9,7 +9,7 @@ defined('BASEPATH') or exit('No direct script access allowed');
  * @param  array $items_cf_params          used only for custom fields for items operations
  * @return mixed
  */
-function render_custom_fields($belongs_to, $rel_id = false, $where = [], $items_cf_params = [])
+function render_custom_fields($belongs_to, $rel_id = false, $where = [], $items_cf_params = [], $is_default = false)
 {
     // Is custom fields for items and in add/edit
     $items_add_edit_preview = isset($items_cf_params['add_edit_preview']) && $items_cf_params['add_edit_preview'] ? true : false;
@@ -110,6 +110,8 @@ function render_custom_fields($belongs_to, $rel_id = false, $where = [], $items_
                     $value = $field['default_value'];
                 }
             }
+
+            if($is_default)   $value = $field['default_value'];
 
             $_input_attrs = [];
 

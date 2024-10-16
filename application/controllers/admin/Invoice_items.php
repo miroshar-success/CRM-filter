@@ -205,6 +205,7 @@ class Invoice_items extends AdminController
         if ($this->input->is_ajax_request()) {
             $item                     = $this->invoice_items_model->get($id);
             $item->long_description   = nl2br($item->long_description);
+            $item->technical_invoice_item = $item->technical_invoice_item;
             $item->custom_fields_html = render_custom_fields('items', $id, [], ['items_pr' => true]);
             $item->custom_fields      = [];
 
@@ -241,5 +242,9 @@ class Invoice_items extends AdminController
 
         set_alert('warning', _l('item_copy_fail'));
         return redirect(admin_url('invoice_items'));
+    }
+
+    public function render_custom_fields($relid, $is_default = false) {
+        echo render_custom_fields('items', $relid == 0 ? false : $relid, [], $relid == 0 ? [] : ['items_pr' => true], $is_default);
     }
 }

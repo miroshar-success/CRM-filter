@@ -84,7 +84,7 @@ class Invoice_items_model extends App_Model
                 $rateCurrencyColumns .= $column . ',';
             }
         }
-        $this->db->select($rateCurrencyColumns . '' . db_prefix() . 'items.id as itemid,rate,
+        $this->db->select($rateCurrencyColumns . '' . db_prefix() . 'items.id as itemid,rate, items.technical_invoice_item as technical_invoice_item,
             t1.taxrate as taxrate,t1.id as taxid,t1.name as taxname,
             t2.taxrate as taxrate_2,t2.id as taxid_2,t2.name as taxname_2,
             description,long_description,group_id,' . db_prefix() . 'items_groups.name as group_name,unit');
@@ -206,6 +206,10 @@ class Invoice_items_model extends App_Model
 
         if (isset($data['tax2']) && $data['tax2'] == '') {
             $data['tax2'] = null;
+        }
+
+        if (!isset($data['technical_invoice_item']) || $data['technical_invoice_item'] == '') {
+            $data['technical_invoice_item'] = 0;
         }
 
         $columns = $this->db->list_fields(db_prefix() . 'items');
