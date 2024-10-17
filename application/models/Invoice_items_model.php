@@ -133,23 +133,38 @@ class Invoice_items_model extends App_Model
 
     public function get_technical_items_by_field_id($field = "proposal", $id = 0)
     {
-        $this->db->select(db_prefix() . 'items.*, 
-            CASE 
-                WHEN ' . db_prefix() . $field . '_technicals.' . $field . ' = ' . $this->db->escape($id) . ' 
-                THEN 1 
-                ELSE 0 
-            END AS is_matched'
-        );
+        $this->db->select(db_prefix() . 'items.*, ' . db_prefix() . 'itemable.id AS itemableid');
         $this->db->from(db_prefix() . 'items');
-        $this->db->join(db_prefix() . $field . '_technicals', db_prefix() . $field . '_technicals.item = ' . db_prefix() . 'items.id', 'left');
-        $this->db->where(db_prefix() . 'items.technical_invoice_item', 1);
-        $this->db->order_by('description', 'asc');
         
-        // Get the results
-        $results = $this->db->get()->result_array(); // Fetch results as an array
-        return $results;
+        // Apply conditions within the JOIN clause with proper quoting
+        $this->db->join(db_prefix() . 'itemable', db_prefix() . 'itemable.item_id = ' . db_prefix() . 'items.id AND ' . 
+            db_prefix() . 'itemable.rel_type = ' . $this->db->escape($field) . ' AND ' . 
+            db_prefix() . 'itemable.rel_id = ' . $this->db->escape($id) . ' AND ' . 
+            db_prefix() . 'itemable.technical_item = 1', 'left');
+        
+        // Filter by technical_invoice_item
+        $this->db->where(db_prefix() . 'items.technical_invoice_item', 1);
+        $this->db->order_by(db_prefix() . 'items.description', 'asc');
+        
+        // Get the results from the items table
+        $technical_items = $this->db->get()->result_array();
+        
+        // Fetch matched technical items
+        $this->db->select(db_prefix() . $field . '_technicals.item');
+        $this->db->where(db_prefix() . $field . '_technicals.' . $field, $id);
+        $matched_technical_items = $this->db->get(db_prefix() . $field . '_technicals')->result_array();
+        
+        // Create an array of matched IDs for easy lookup
+        $matched_ids = array_column($matched_technical_items, 'item');
+
+        // Set is_matched for each technical item
+        foreach ($technical_items as &$item) {
+            $item['is_matched'] = in_array($item['id'], $matched_ids) ? 1 : 0;
+        }
+        return $technical_items;
     }
 
+    
     public function get_sum_technical_items_by_field_id($field = "proposal", $id = 0)
     {
         // Select the SUM of the rate field when the item is matched

@@ -95,7 +95,7 @@ class Invoices_model extends App_Model
      * @param  mixed $id
      * @return array|object
      */
-    public function get($id = '', $where = [])
+    public function get($id = '', $where = [], $for_editor = false, $pdfview = false)
     {
         $this->db->select('*, ' . db_prefix() . 'currencies.id as currencyid, ' . db_prefix() . 'invoices.id as id, ' . db_prefix() . 'currencies.name as currency_name');
         $this->db->from(db_prefix() . 'invoices');
@@ -107,7 +107,7 @@ class Invoices_model extends App_Model
             if ($invoice) {
                 $invoice->total_left_to_pay = get_invoice_total_left_to_pay($invoice->id, $invoice->total);
 
-                $invoice->items       = get_items_by_type('invoice', $id);
+                $invoice->items       = get_items_by_type('invoice', $id, $pdfview);
                 $invoice->attachments = $this->get_attachments($id);
 
                 if ($invoice->project_id) {
@@ -317,6 +317,8 @@ class Invoices_model extends App_Model
      */
     public function add($data, $expense = false)
     {
+        unset($data['technical_removed_items']);
+        unset($data['itemable_id']);
         $data['prefix'] = get_option('invoice_prefix');
 
         $data['number_format'] = get_option('invoice_number_format');
@@ -367,10 +369,37 @@ class Invoices_model extends App_Model
 
         $data['hash'] = app_generate_hash();
 
+      
+        $technical_items = [];
+        if (isset($data['technical_newitems']) && $data['technical_newitems'] != null) {
+            $this->db->select('id, description, long_description, rate, unit');
+            $this->db->where_in('id', $data['technical_newitems']);
+            $technical_items = $this->db->get('tblitems')->result_array();
+        }
+
         $items = [];
 
         if (isset($data['newitems'])) {
+            if($technical_items != null) {
+                $start_index = count($data['newitems']) + 1;            
+                foreach ($technical_items as $new_item) {
+                    $data['newitems'][$start_index] = [
+                        'order' => $start_index, 
+                        'description' => $new_item['description'],
+                        'long_description' => $new_item['long_description'],
+                        'qty' => '1', 
+                        'unit' => $new_item['unit'],
+                        'rate' => $new_item['rate'],
+                        'custom_fields' => [],
+                        'technical_item' => 1,
+                        'item_id' => $new_item['id'],
+                    ];
+                    $start_index++; 
+                }
+            }
+            
             $items = $data['newitems'];
+            unset($data['technical_newitems']);
             unset($data['newitems']);
         }
 
@@ -731,6 +760,7 @@ class Invoices_model extends App_Model
      */
     public function update($data, $id)
     {
+        unset($data['itemable_id']);
         $original_invoice = $this->get($id);
         $updated          = false;
 
@@ -790,7 +820,57 @@ class Invoices_model extends App_Model
         $data['duedate'] = isset($data['duedate']) && empty($data['duedate']) ? null : $data['duedate'];
 
         $items    = $data['items'] ?? [];
-        $newitems = $data['newitems'] ?? [];
+       
+        $technical_items = [];
+        if (isset($data['technical_newitems']) && $data['technical_newitems'] != null) {
+            $this->db->select('id, description, long_description, rate, unit');
+            $this->db->where_in('id', $data['technical_newitems']);
+            $technical_items = $this->db->get('tblitems')->result_array();
+        }
+
+        $newitems = [];
+
+        // Initialize $data['newitems'] as an empty array if not already set
+        if (!isset($data['newitems'])) {
+            $data['newitems'] = [];
+        }
+
+        if($technical_items != null) {
+            $start_index = count($data['newitems']) + 1;            
+            foreach ($technical_items as $new_item) {
+                $data['newitems'][$start_index] = [
+                    'order' => $start_index, 
+                    'description' => $new_item['description'],
+                    'long_description' => $new_item['long_description'],
+                    'qty' => '1', 
+                    'unit' => $new_item['unit'],
+                    'rate' => $new_item['rate'],
+                    'custom_fields' => [],
+                    'technical_item' => 1,
+                    'item_id' => $new_item['id'],
+                ];
+                $start_index++; 
+            }
+        }
+       
+        $newitems = $data['newitems'];
+        // Unset $data['technical_newitems'] if it was processed
+        unset($data['technical_newitems']);
+
+        // Initialize $data['removed_items'] as an empty array if not already set
+        if (!isset($data['removed_items'])) {
+            $data['removed_items'] = [];
+        }
+
+
+        // Check if $data['technical_removed_items'] is set and not empty
+        if (isset($data['technical_removed_items']) && !empty($data['technical_removed_items'])) {
+            // Loop through each technical removed item and add it to removed_items
+            foreach ($data['technical_removed_items'] as $removed_item) {
+                $data['removed_items'][] = $removed_item; // Append each item
+            }
+        }
+        unset($data['technical_removed_items']);
 
         if (handle_custom_fields_post($id, $custom_fields = $data['custom_fields'] ?? [])) {
             $updated = true;

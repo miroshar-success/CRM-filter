@@ -55,6 +55,8 @@ class Proposals_model extends App_Model
      */
     public function add($data)
     {
+        unset($data['technical_removed_items']);
+        unset($data['itemable_id']);
         $data['allow_comments'] = isset($data['allow_comments']) ? 1 : 0;
 
         $save_and_send = isset($data['save_and_send']);
@@ -89,12 +91,38 @@ class Proposals_model extends App_Model
             }
         }
 
-        $items = [];
-        if (isset($data['newitems'])) {
-            $items = $data['newitems'];
-            unset($data['newitems']);
+        $technical_items = [];
+        if (isset($data['technical_newitems']) && $data['technical_newitems'] != null) {
+            $this->db->select('id, description, long_description, rate, unit');
+            $this->db->where_in('id', $data['technical_newitems']);
+            $technical_items = $this->db->get('tblitems')->result_array();
         }
 
+        $items = [];
+
+        if (isset($data['newitems'])) {
+            if($technical_items != null) {
+                $start_index = count($data['newitems']) + 1;            
+                foreach ($technical_items as $new_item) {
+                    $data['newitems'][$start_index] = [
+                        'order' => $start_index, 
+                        'description' => $new_item['description'],
+                        'long_description' => $new_item['long_description'],
+                        'qty' => '1', 
+                        'unit' => $new_item['unit'],
+                        'rate' => $new_item['rate'],
+                        'custom_fields' => [],
+                        'technical_item' => 1,
+                        'item_id' => $new_item['id'],
+                    ];
+                    $start_index++; 
+                }
+            }
+            
+            $items = $data['newitems'];
+            unset($data['technical_newitems']);
+            unset($data['newitems']);
+        }
         if ($this->copy == false) {
             $data['content'] = '{proposal_items}';
         }
@@ -185,6 +213,7 @@ class Proposals_model extends App_Model
      */
     public function update($data, $id)
     {
+        unset($data['itemable_id']);
         $affectedRows = 0;
 
         $data['allow_comments'] = isset($data['allow_comments']) ? 1 : 0;
@@ -217,17 +246,63 @@ class Proposals_model extends App_Model
             unset($data['items']);
         }
 
-        $newitems = [];
-        if (isset($data['newitems'])) {
-            $newitems = $data['newitems'];
-            unset($data['newitems']);
+        $technical_items = [];
+        if (isset($data['technical_newitems']) && $data['technical_newitems'] != null) {
+            $this->db->select('id, description, long_description, rate, unit');
+            $this->db->where_in('id', $data['technical_newitems']);
+            $technical_items = $this->db->get('tblitems')->result_array();
         }
 
+        $newitems = [];
+
+        // Initialize $data['newitems'] as an empty array if not already set
+        if (!isset($data['newitems'])) {
+            $data['newitems'] = [];
+        }
+
+        if($technical_items != null) {
+            $start_index = count($data['newitems']) + 1;            
+            foreach ($technical_items as $new_item) {
+                $data['newitems'][$start_index] = [
+                    'order' => $start_index, 
+                    'description' => $new_item['description'],
+                    'long_description' => $new_item['long_description'],
+                    'qty' => '1', 
+                    'unit' => $new_item['unit'],
+                    'rate' => $new_item['rate'],
+                    'custom_fields' => [],
+                    'technical_item' => 1,
+                    'item_id' => $new_item['id'],
+                ];
+                $start_index++; 
+            }
+        }
+       
+        $newitems = $data['newitems'];
+        // Unset $data['technical_newitems'] if it was processed
+        unset($data['technical_newitems']);
+        unset($data['newitems']);
+
+        // Initialize $data['removed_items'] as an empty array if not already set
+        if (!isset($data['removed_items'])) {
+            $data['removed_items'] = [];
+        }
+
+
+        // Check if $data['technical_removed_items'] is set and not empty
+        if (isset($data['technical_removed_items']) && !empty($data['technical_removed_items'])) {
+            // Loop through each technical removed item and add it to removed_items
+            foreach ($data['technical_removed_items'] as $removed_item) {
+                $data['removed_items'][] = $removed_item; // Append each item
+            }
+        }
+        unset($data['technical_removed_items']);
         if (isset($data['tags'])) {
             if (handle_tags_save($data['tags'], $id, 'proposal')) {
                 $affectedRows++;
             }
         }
+
 
         $data['address'] = trim($data['address']);
         $data['address'] = nl2br($data['address']);
@@ -250,7 +325,6 @@ class Proposals_model extends App_Model
                 $affectedRows++;
             }
         }
-
         unset($data['removed_items']);
 
         $this->db->where('id', $id);
@@ -344,7 +418,7 @@ class Proposals_model extends App_Model
      * @param  mixed $id proposal id OPTIONAL
      * @return mixed
      */
-    public function get($id = '', $where = [], $for_editor = false)
+    public function get($id = '', $where = [], $for_editor = false, $pdfview = false)
     {
         $this->db->where($where);
 
@@ -361,7 +435,7 @@ class Proposals_model extends App_Model
             $proposal = $this->db->get()->row();
             if ($proposal) {
                 $proposal->attachments                           = $this->get_attachments($id);
-                $proposal->items                                 = get_items_by_type('proposal', $id);
+                $proposal->items                                 = get_items_by_type('proposal', $id, $pdfview);
                 $proposal->visible_attachments_to_customer_found = false;
                 foreach ($proposal->attachments as $attachment) {
                     if ($attachment['visible_to_customer'] == 1) {

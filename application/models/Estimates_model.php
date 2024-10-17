@@ -48,7 +48,7 @@ class Estimates_model extends App_Model
      * @param array $where perform where
      * @return mixed
      */
-    public function get($id = '', $where = [])
+    public function get($id = '', $where = [], $for_editor = false, $pdfview = false)
     {
         $this->db->select('*,' . db_prefix() . 'currencies.id as currencyid, ' . db_prefix() . 'estimates.id as id, ' . db_prefix() . 'currencies.name as currency_name');
         $this->db->from(db_prefix() . 'estimates');
@@ -69,8 +69,7 @@ class Estimates_model extends App_Model
                     }
                 }
 
-                $estimate->items = get_items_by_type('estimate', $id);
-
+                $estimate->items = get_items_by_type('estimate', $id, $pdfview);
                 if ($estimate->project_id) {
                     $this->load->model('projects_model');
                     $estimate->project_data = $this->projects_model->get($estimate->project_id);
@@ -476,6 +475,8 @@ class Estimates_model extends App_Model
      */
     public function add($data)
     {
+        unset($data['technical_removed_items']);
+        unset($data['itemable_id']);
         $data['datecreated'] = date('Y-m-d H:i:s');
 
         $data['addedfrom'] = get_staff_user_id();
@@ -500,9 +501,36 @@ class Estimates_model extends App_Model
         $data['hash'] = app_generate_hash();
         $tags         = isset($data['tags']) ? $data['tags'] : '';
 
+        $technical_items = [];
+        if (isset($data['technical_newitems']) && $data['technical_newitems'] != null) {
+            $this->db->select('id, description, long_description, rate, unit');
+            $this->db->where_in('id', $data['technical_newitems']);
+            $technical_items = $this->db->get('tblitems')->result_array();
+        }
+
         $items = [];
+
         if (isset($data['newitems'])) {
+            if($technical_items != null) {
+                $start_index = count($data['newitems']) + 1;            
+                foreach ($technical_items as $new_item) {
+                    $data['newitems'][$start_index] = [
+                        'order' => $start_index, 
+                        'description' => $new_item['description'],
+                        'long_description' => $new_item['long_description'],
+                        'qty' => '1', 
+                        'unit' => $new_item['unit'],
+                        'rate' => $new_item['rate'],
+                        'custom_fields' => [],
+                        'technical_item' => 1,
+                        'item_id' => $new_item['id'],
+                    ];
+                    $start_index++; 
+                }
+            }
+            
             $items = $data['newitems'];
+            unset($data['technical_newitems']);
             unset($data['newitems']);
         }
 
@@ -589,6 +617,7 @@ class Estimates_model extends App_Model
      */
     public function update($data, $id)
     {
+        unset($data['itemable_id']);
         $affectedRows = 0;
 
         $data['number'] = trim($data['number']);
@@ -609,11 +638,57 @@ class Estimates_model extends App_Model
             unset($data['items']);
         }
 
-        $newitems = [];
-        if (isset($data['newitems'])) {
-            $newitems = $data['newitems'];
-            unset($data['newitems']);
+        $technical_items = [];
+        if (isset($data['technical_newitems']) && $data['technical_newitems'] != null) {
+            $this->db->select('id, description, long_description, rate, unit');
+            $this->db->where_in('id', $data['technical_newitems']);
+            $technical_items = $this->db->get('tblitems')->result_array();
         }
+
+        $newitems = [];
+
+        // Initialize $data['newitems'] as an empty array if not already set
+        if (!isset($data['newitems'])) {
+            $data['newitems'] = [];
+        }
+
+        if($technical_items != null) {
+            $start_index = count($data['newitems']) + 1;            
+            foreach ($technical_items as $new_item) {
+                $data['newitems'][$start_index] = [
+                    'order' => $start_index, 
+                    'description' => $new_item['description'],
+                    'long_description' => $new_item['long_description'],
+                    'qty' => '1', 
+                    'unit' => $new_item['unit'],
+                    'rate' => $new_item['rate'],
+                    'custom_fields' => [],
+                    'technical_item' => 1,
+                    'item_id' => $new_item['id'],
+                ];
+                $start_index++; 
+            }
+        }
+       
+        $newitems = $data['newitems'];
+        // Unset $data['technical_newitems'] if it was processed
+        unset($data['technical_newitems']);
+        unset($data['newitems']);
+
+        // Initialize $data['removed_items'] as an empty array if not already set
+        if (!isset($data['removed_items'])) {
+            $data['removed_items'] = [];
+        }
+
+
+        // Check if $data['technical_removed_items'] is set and not empty
+        if (isset($data['technical_removed_items']) && !empty($data['technical_removed_items'])) {
+            // Loop through each technical removed item and add it to removed_items
+            foreach ($data['technical_removed_items'] as $removed_item) {
+                $data['removed_items'][] = $removed_item; // Append each item
+            }
+        }
+        unset($data['technical_removed_items']);
 
         if (isset($data['custom_fields'])) {
             $custom_fields = $data['custom_fields'];
