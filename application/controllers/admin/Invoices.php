@@ -546,7 +546,7 @@ class Invoices extends AdminController
             die(_l('invoice_not_found'));
         }
 
-        $invoice = $this->invoices_model->get($id);
+        $invoice = $this->invoices_model->get($id, [], false, true);
 
         if (!$invoice || !user_can_view_invoice($id)) {
             echo _l('invoice_not_found');
@@ -802,7 +802,7 @@ class Invoices extends AdminController
             }
         }
 
-        $invoice        = $this->invoices_model->get($id);
+        $invoice        = $this->invoices_model->get($id, [], false, true);
         $invoice        = hooks()->apply_filters('before_admin_view_invoice_pdf', $invoice);
         $invoice_number = format_invoice_number($invoice->id);
 

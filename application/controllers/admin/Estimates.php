@@ -377,8 +377,7 @@ class Estimates extends AdminController
             die('No estimate found');
         }
 
-        $estimate = $this->estimates_model->get($id);
-
+        $estimate = $this->estimates_model->get($id, [], false, true);
         if (!$estimate || !user_can_view_estimate($id)) {
             echo _l('estimate_not_found');
             die;
@@ -643,7 +642,7 @@ class Estimates extends AdminController
         if (!$id) {
             redirect(admin_url('estimates/list_estimates'));
         }
-        $estimate        = $this->estimates_model->get($id);
+        $estimate        = $this->estimates_model->get($id, [], false, true);
         $estimate_number = format_estimate_number($estimate->id);
 
         try {
