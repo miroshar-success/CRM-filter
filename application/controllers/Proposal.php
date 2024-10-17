@@ -7,7 +7,7 @@ class Proposal extends ClientsController
     public function index($id, $hash)
     {
         check_proposal_restrictions($id, $hash);
-        $proposal = $this->proposals_model->get($id);
+        $proposal = $this->proposals_model->get($id, [], false, true);
 
         if ($proposal->rel_type == 'customer' && !is_client_logged_in()) {
             load_client_language($proposal->rel_id);
@@ -20,7 +20,7 @@ class Proposal extends ClientsController
             $action = $this->input->post('action');
             switch ($action) {
                 case 'proposal_pdf':
-
+                   
                     $proposal_number = format_proposal_number($id);
                     $companyname     = get_option('invoice_company_name');
                     if ($companyname != '') {

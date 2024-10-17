@@ -7,8 +7,7 @@ class Estimate extends ClientsController
     public function index($id, $hash)
     {
         check_estimate_restrictions($id, $hash);
-        $estimate = $this->estimates_model->get($id);
-
+        $estimate = $this->estimates_model->get($id, [], false, true);
         if (!is_client_logged_in()) {
             load_client_language($estimate->clientid);
         }

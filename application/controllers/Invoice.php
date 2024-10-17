@@ -7,7 +7,7 @@ class Invoice extends ClientsController
     public function index($id, $hash)
     {
         check_invoice_restrictions($id, $hash);
-        $invoice = $this->invoices_model->get($id);
+        $invoice = $this->invoices_model->get($id, [], false, true);
 
         $invoice = hooks()->apply_filters('before_client_view_invoice', $invoice);
 
