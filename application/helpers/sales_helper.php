@@ -543,17 +543,25 @@ function get_decimal_places()
  * @param  string $type rel_type value
  * @return array
  */
-function get_items_by_type($type, $id)
+function get_items_by_type($type, $id, $is_for_pdf = false)
 {
     $CI = &get_instance();
     $CI->db->select();
     $CI->db->from(db_prefix() . 'itemable');
     $CI->db->where('rel_id', $id);
+    if($is_for_pdf == false) {
+        $CI->db->group_start() // Begin grouping the where clause
+          ->where('technical_item', 0)
+          ->or_where('technical_item IS NULL', null, false) // Custom SQL for NULL check
+       ->group_end(); // End grouping
+    }
     $CI->db->where('rel_type', $type);
+    $CI->db->order_by('technical_item', 'asc');
     $CI->db->order_by('item_order', 'asc');
 
     return $CI->db->get()->result_array();
 }
+
 /**
 * Function that update total tax in sales table eq. invoice, proposal, estimates, credit note
 * @param  mixed $id
@@ -686,6 +694,8 @@ function add_new_sales_item_post($item, $rel_id, $rel_type)
                     'rel_type'         => $rel_type,
                     'item_order'       => $item['order'],
                     'unit'             => $item['unit'],
+                    'technical_item'   => isset($item['technical_item']) ? $item['technical_item'] : '',
+                    'item_id'          => isset($item['item_id']) ? $item['item_id'] : '',
                 ]);
 
     $id = $CI->db->insert_id();
