@@ -1089,6 +1089,7 @@ $lang['estimate_subtotal']               = 'Sub Total';
 $lang['estimate_adjustment']             = 'Adjustment';
 $lang['estimate_discount']               = 'Discount';
 $lang['estimate_total']                  = 'Total';
+$lang['technical_items_total']           = 'Technical Items Total';
 $lang['estimate_to']                     = 'To';
 $lang['estimate_data_date']              = 'Estimate Date';
 $lang['estimate_data_expiry_date']       = 'Expiry Date';

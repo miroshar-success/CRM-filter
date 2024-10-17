@@ -8,6 +8,7 @@ class Invoices extends AdminController
     {
         parent::__construct();
         $this->load->model('invoices_model');
+        $this->load->model('invoices_technical_model');
         $this->load->model('credit_notes_model');
     }
 
@@ -410,11 +411,15 @@ class Invoices extends AdminController
     {
         if ($this->input->post()) {
             $invoice_data = $this->input->post();
+            $data = $invoice_data;
+            unset($data['technical_invoice_item']);
+            unset($data['technical_item_ids']);
+            unset($data['checked_item_ids']);
             if ($id == '') {
                 if (!has_permission('invoices', '', 'create')) {
                     access_denied('invoices');
                 }
-
+                $id = $this->invoices_model->add($data);
                 if (hooks()->apply_filters('validate_invoice_number', true)) {
                     $number = ltrim($invoice_data['number'], '0');
                     if (total_rows('invoices', [
@@ -431,6 +436,7 @@ class Invoices extends AdminController
                 $id = $this->invoices_model->add($invoice_data);
                 if ($id) {
                     set_alert('success', _l('added_successfully', _l('invoice')));
+                    $this->invoices_technical_model->add($id, $invoice_data['checked_item_ids']);
                     $redUrl = admin_url('invoices/list_invoices/' . $id);
 
                     if (isset($invoice_data['save_and_record_payment'])) {
@@ -460,8 +466,9 @@ class Invoices extends AdminController
                         redirect(admin_url('invoices/invoice/' . $id));
                     }
                 }
-                $success = $this->invoices_model->update($invoice_data, $id);
+                $success = $this->invoices_model->update($data, $id);
                 if ($success) {
+                    $this->invoices_technical_model->update($id, $invoice_data['checked_item_ids']);
                     set_alert('success', _l('updated_successfully', _l('invoice')));
                 }
 
@@ -509,6 +516,8 @@ class Invoices extends AdminController
             $data['ajaxItems'] = true;
         }
         $data['items_groups'] = $this->invoice_items_model->get_groups();
+        $data['technical_items'] = $this->invoice_items_model->get_technical_items_by_field_id("invoice", $id);
+        $data['technical_items_sum'] = $this->invoice_items_model->get_sum_technical_items_by_field_id("invoice", $id);
 
         $this->load->model('currencies_model');
         $data['currencies'] = $this->currencies_model->get();

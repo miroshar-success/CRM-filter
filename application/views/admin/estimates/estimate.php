@@ -33,6 +33,30 @@ $(document).ready(function() {
         var newValue = $(this).val(); // Get the value of .qq
         $('#custom_fields\\[estimate\\]\\[25\\]').val(newValue);
     });
+    var sum_technical_items = "€<?php echo $technical_items_sum; ?>";
+    $('.technical_items_total').text(sum_technical_items);
+    $('.technical_items_totals').val(sum_technical_items);
+    $('.technical_invoice_item_check').on('change', function() {
+        let sum = 0;
+
+        $('.technical_items_area .technical_invoice_item_check:checked').each(function() {
+            sum += parseFloat($(this).val()) || 0;
+        });
+
+        $('.technical_items_total').text('€' + sum.toFixed(2));
+        $('.technical_items_totals').val(sum.toFixed(2));
+        console.log($('.technical_items_totals').val());
+    });
+
+    $('#estimate-form').on('submit', function(e) { 
+        let checkedIds = [];
+        $('.technical_invoice_item_check:checked').each(function() {
+            let itemId = $(this).closest('.form-group').find('.technical_item_ids').val();
+            checkedIds.push(itemId);
+        });
+        $('#checked_item_ids').val(checkedIds.join(','));
+        // validate_estimate_form();
+    });
 });
 $(document).ready(function() {
     // Count the number of elements with class "input-group-addon"

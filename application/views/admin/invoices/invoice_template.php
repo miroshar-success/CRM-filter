@@ -711,106 +711,115 @@
                 </tbody>
             </table>
         </div>
-        <div class="col-md-8 col-md-offset-4">
-            <table class="table text-right">
-                <tbody>
-                    <tr id="subtotal">
-                        <td>
-                            <span class="bold tw-text-neutral-700"><?php echo _l('invoice_subtotal'); ?> :</span>
-                        </td>
-                        <td class="subtotal">
-                        </td>
-                    </tr>
-                    <tr id="discount_area">
-                        <td>
-                            <div class="row">
-                                <div class="col-md-7">
-                                    <span class="bold tw-text-neutral-700">
-                                        <?php echo _l('invoice_discount'); ?>
-                                    </span>
-                                </div>
-                                <div class="col-md-5">
-                                    <div class="input-group" id="discount-total">
+        <div class="row">
+            <div class="col-md-6 technical_items_area">
+                <?php $this->load->view('admin/invoice_items/technical_item_select'); ?>
+            </div>
+            <div class="col-md-6">
+                <table class="table text-right">
+                    <tbody>
+                        <tr id="subtotal">
+                            <td>
+                                <span class="bold tw-text-neutral-700"><?php echo _l('invoice_subtotal'); ?> :</span>
+                            </td>
+                            <td class="subtotal">
+                            </td>
+                        </tr>
+                        <tr id="discount_area">
+                            <td>
+                                <div class="row">
+                                    <div class="col-md-7">
+                                        <span class="bold tw-text-neutral-700">
+                                            <?php echo _l('invoice_discount'); ?>
+                                        </span>
+                                    </div>
+                                    <div class="col-md-5">
+                                        <div class="input-group" id="discount-total">
 
-                                        <input type="number"
-                                            value="<?php echo(isset($invoice) ? $invoice->discount_percent : 0); ?>"
-                                            class="form-control pull-left input-discount-percent<?php if (isset($invoice) && !is_sale_discount($invoice, 'percent') && is_sale_discount_applied($invoice)) {
-                      echo ' hide';
-                  } ?>" min="0" max="100" name="discount_percent">
+                                            <input type="number"
+                                                value="<?php echo(isset($invoice) ? $invoice->discount_percent : 0); ?>"
+                                                class="form-control pull-left input-discount-percent<?php if (isset($invoice) && !is_sale_discount($invoice, 'percent') && is_sale_discount_applied($invoice)) {
+                        echo ' hide';
+                    } ?>" min="0" max="100" name="discount_percent">
 
-                                        <input type="number" data-toggle="tooltip"
-                                            data-title="<?php echo _l('numbers_not_formatted_while_editing'); ?>"
-                                            value="<?php echo(isset($invoice) ? $invoice->discount_total : 0); ?>"
-                                            class="form-control pull-left input-discount-fixed<?php if (!isset($invoice) || (isset($invoice) && !is_sale_discount($invoice, 'fixed'))) {
-                      echo ' hide';
-                  } ?>" min="0" name="discount_total">
+                                            <input type="number" data-toggle="tooltip"
+                                                data-title="<?php echo _l('numbers_not_formatted_while_editing'); ?>"
+                                                value="<?php echo(isset($invoice) ? $invoice->discount_total : 0); ?>"
+                                                class="form-control pull-left input-discount-fixed<?php if (!isset($invoice) || (isset($invoice) && !is_sale_discount($invoice, 'fixed'))) {
+                        echo ' hide';
+                    } ?>" min="0" name="discount_total">
 
-                                        <div class="input-group-addon">
-                                            <div class="dropdown">
-                                                <a class="dropdown-toggle" href="#" id="dropdown_menu_tax_total_type"
-                                                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
-                                                    <span class="discount-total-type-selected">
-                                                        <?php if (!isset($invoice) || isset($invoice) && (is_sale_discount($invoice, 'percent') || !is_sale_discount_applied($invoice))) {
-                      echo '%';
-                  } else {
-                      echo _l('discount_fixed_amount');
-                  }
-                                        ?>
-                                                    </span>
-                                                    <span class="caret"></span>
-                                                </a>
-                                                <ul class="dropdown-menu" id="discount-total-type-dropdown"
-                                                    aria-labelledby="dropdown_menu_tax_total_type">
-                                                    <li>
-                                                        <a href="#" class="discount-total-type discount-type-percent<?php if (!isset($invoice) || (isset($invoice) && is_sale_discount($invoice, 'percent')) || (isset($invoice) && !is_sale_discount_applied($invoice))) {
-                                            echo ' selected';
-                                        } ?>">%</a>
-                                                    </li>
-                                                    <li><a href="#" class="discount-total-type discount-type-fixed<?php if (isset($invoice) && is_sale_discount($invoice, 'fixed')) {
-                                            echo ' selected';
-                                        } ?>">
-                                                            <?php echo _l('discount_fixed_amount'); ?>
-                                                        </a>
-                                                    </li>
-                                                </ul>
+                                            <div class="input-group-addon">
+                                                <div class="dropdown">
+                                                    <a class="dropdown-toggle" href="#" id="dropdown_menu_tax_total_type"
+                                                        data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                                                        <span class="discount-total-type-selected">
+                                                            <?php if (!isset($invoice) || isset($invoice) && (is_sale_discount($invoice, 'percent') || !is_sale_discount_applied($invoice))) {
+                        echo '%';
+                    } else {
+                        echo _l('discount_fixed_amount');
+                    }
+                                            ?>
+                                                        </span>
+                                                        <span class="caret"></span>
+                                                    </a>
+                                                    <ul class="dropdown-menu" id="discount-total-type-dropdown"
+                                                        aria-labelledby="dropdown_menu_tax_total_type">
+                                                        <li>
+                                                            <a href="#" class="discount-total-type discount-type-percent<?php if (!isset($invoice) || (isset($invoice) && is_sale_discount($invoice, 'percent')) || (isset($invoice) && !is_sale_discount_applied($invoice))) {
+                                                echo ' selected';
+                                            } ?>">%</a>
+                                                        </li>
+                                                        <li><a href="#" class="discount-total-type discount-type-fixed<?php if (isset($invoice) && is_sale_discount($invoice, 'fixed')) {
+                                                echo ' selected';
+                                            } ?>">
+                                                                <?php echo _l('discount_fixed_amount'); ?>
+                                                            </a>
+                                                        </li>
+                                                    </ul>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                        </td>
-                        <td class="discount-total"></td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <div class="row">
-                                <div class="col-md-7">
-                                    <span
-                                        class="bold tw-text-neutral-700"><?php echo _l('invoice_adjustment'); ?></span>
+                            </td>
+                            <td class="discount-total"></td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="row">
+                                    <div class="col-md-7">
+                                        <span
+                                            class="bold tw-text-neutral-700"><?php echo _l('invoice_adjustment'); ?></span>
+                                    </div>
+                                    <div class="col-md-5">
+                                        <input type="number" data-toggle="tooltip"
+                                            data-title="<?php echo _l('numbers_not_formatted_while_editing'); ?>" value="<?php if (isset($invoice)) {
+                                                echo $invoice->adjustment;
+                                            } else {
+                                                echo 0;
+                                            } ?>" class="form-control pull-left" name="adjustment">
+                                    </div>
                                 </div>
-                                <div class="col-md-5">
-                                    <input type="number" data-toggle="tooltip"
-                                        data-title="<?php echo _l('numbers_not_formatted_while_editing'); ?>" value="<?php if (isset($invoice)) {
-                                            echo $invoice->adjustment;
-                                        } else {
-                                            echo 0;
-                                        } ?>" class="form-control pull-left" name="adjustment">
-                                </div>
-                            </div>
-                        </td>
-                        <td class="adjustment"></td>
-                    </tr>
-                    <tr>
-                        <td><span class="bold tw-text-neutral-700"><?php echo _l('invoice_total'); ?> :</span>
-                        </td>
-                        <td class="total">
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-
+                            </td>
+                            <td class="adjustment"></td>
+                        </tr>
+                        <tr>
+                            <td><span class="bold tw-text-neutral-700"><?php echo _l('technical_items_total'); ?> :</span>
+                            </td>
+                            <td class="technical_items_total">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><span class="bold tw-text-neutral-700"><?php echo _l('invoice_total'); ?> :</span>
+                            </td>
+                            <td class="total">
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
-
 
         <div id="removed-items"></div>
         <div id="billed-tasks"></div>

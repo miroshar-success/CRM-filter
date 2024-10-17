@@ -10,6 +10,7 @@ class Estimates extends AdminController
     {
         parent::__construct();
         $this->load->model('estimates_model');
+        $this->load->model('estimates_technical_model');
     }
 
     /* Get all estimates in case user go on index page */
@@ -202,7 +203,10 @@ class Estimates extends AdminController
     {
         if ($this->input->post()) {
             $estimate_data = $this->input->post();
-
+            $data = $estimate_data;
+            unset($data['technical_invoice_item']);
+            unset($data['technical_item_ids']);
+            unset($data['checked_item_ids']);
             $save_and_send_later = false;
             if (isset($estimate_data['save_and_send_later'])) {
                 unset($estimate_data['save_and_send_later']);
@@ -213,11 +217,11 @@ class Estimates extends AdminController
                 if (!has_permission('estimates', '', 'create')) {
                     access_denied('estimates');
                 }
-                $id = $this->estimates_model->add($estimate_data);
+                $id = $this->estimates_model->add($data);
 
                 if ($id) {
                     set_alert('success', _l('added_successfully', _l('estimate')));
-
+                    $this->estimates_technical_model->add($id, $estimate_data['checked_item_ids']);
                     $redUrl = admin_url('estimates/list_estimates/' . $id);
 
                     if ($save_and_send_later) {
@@ -233,8 +237,10 @@ class Estimates extends AdminController
                 if (!has_permission('estimates', '', 'edit')) {
                     access_denied('estimates');
                 }
-                $success = $this->estimates_model->update($estimate_data, $id);
+                $success = $this->estimates_model->update($data, $id);
+               
                 if ($success) {
+                    $this->estimates_technical_model->update($id, $estimate_data['checked_item_ids']);
                     set_alert('success', _l('updated_successfully', _l('estimate')));
                 }
                 if ($this->set_estimate_pipeline_autoload($id)) {
@@ -283,7 +289,8 @@ class Estimates extends AdminController
             $data['ajaxItems'] = true;
         }
         $data['items_groups'] = $this->invoice_items_model->get_groups();
-
+        $data['technical_items'] = $this->invoice_items_model->get_technical_items_by_field_id("estimate", $id);
+        $data['technical_items_sum'] = $this->invoice_items_model->get_sum_technical_items_by_field_id("estimate", $id);
         $data['staff']             = $this->staff_model->get('', ['active' => 1]);
         $data['estimate_statuses'] = $this->estimates_model->get_statuses();
         $data['title']             = $title;

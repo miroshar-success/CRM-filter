@@ -116,6 +116,7 @@ class Invoice_items_model extends App_Model
         foreach ($groups as $group) {
             $this->db->select('*,' . db_prefix() . 'items_groups.name as group_name,' . db_prefix() . 'items.id as id');
             $this->db->where('group_id', $group['id']);
+            $this->db->where('group_id >', 0);
             $this->db->join(db_prefix() . 'items_groups', '' . db_prefix() . 'items_groups.id = ' . db_prefix() . 'items.group_id', 'left');
             $this->db->order_by('description', 'asc');
             $_items = $this->db->get(db_prefix() . 'items')->result_array();
@@ -130,6 +131,50 @@ class Invoice_items_model extends App_Model
         return $items;
     }
 
+    public function get_technical_items_by_field_id($field = "proposal", $id = 0)
+    {
+        $this->db->select(db_prefix() . 'items.*, 
+            CASE 
+                WHEN ' . db_prefix() . $field . '_technicals.' . $field . ' = ' . $this->db->escape($id) . ' 
+                THEN 1 
+                ELSE 0 
+            END AS is_matched'
+        );
+        $this->db->from(db_prefix() . 'items');
+        $this->db->join(db_prefix() . $field . '_technicals', db_prefix() . $field . '_technicals.item = ' . db_prefix() . 'items.id', 'left');
+        $this->db->where(db_prefix() . 'items.technical_invoice_item', 1);
+        $this->db->order_by('description', 'asc');
+        
+        // Get the results
+        $results = $this->db->get()->result_array(); // Fetch results as an array
+        return $results;
+    }
+
+    public function get_sum_technical_items_by_field_id($field = "proposal", $id = 0)
+    {
+        // Select the SUM of the rate field when the item is matched
+        $this->db->select('SUM(
+            CASE 
+                WHEN ' . db_prefix() . $field . '_technicals.' . $field . ' = ' . $this->db->escape($id) . ' 
+                THEN ' . db_prefix() . 'items.rate 
+                ELSE 0 
+            END
+        ) AS rate_sum');
+        
+        $this->db->from(db_prefix() . 'items');
+        $this->db->join(db_prefix() . $field . '_technicals', db_prefix() . $field . '_technicals.item = ' . db_prefix() . 'items.id', 'left');
+        $this->db->where(db_prefix() . 'items.technical_invoice_item', 1);
+        
+        // Get the result
+        $query = $this->db->get();
+        
+        // Fetch the sum as a single result
+        $result = $query->row(); // Fetch the first row (we expect only one row for the SUM)
+        
+        return $result->rate_sum; // Return the sum of the rate for matched items
+    }
+    
+    
     /**
      * Add new invoice item
      * @param array $data Invoice item data

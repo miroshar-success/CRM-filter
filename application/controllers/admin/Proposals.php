@@ -10,6 +10,7 @@ class Proposals extends AdminController
     {
         parent::__construct();
         $this->load->model('proposals_model');
+        $this->load->model('proposals_technical_model');
         $this->load->model('currencies_model');
     }
 
@@ -268,13 +269,18 @@ class Proposals extends AdminController
     {
         if ($this->input->post()) {
             $proposal_data = $this->input->post();
+            $data = $proposal_data;
+            unset($data['technical_invoice_item']);
+            unset($data['technical_item_ids']);
+            unset($data['checked_item_ids']);
             if ($id == '') {
                 if (!has_permission('proposals', '', 'create')) {
                     access_denied('proposals');
                 }
-                $id = $this->proposals_model->add($proposal_data);
+                $id = $this->proposals_model->add($data);
                 if ($id) {
                     set_alert('success', _l('added_successfully', _l('proposal')));
+                    $this->proposals_technical_model->add($id, $proposal_data['checked_item_ids']);
                     if ($this->set_proposal_pipeline_autoload($id)) {
                         redirect(admin_url('proposals'));
                     } else {
@@ -285,8 +291,9 @@ class Proposals extends AdminController
                 if (!has_permission('proposals', '', 'edit')) {
                     access_denied('proposals');
                 }
-                $success = $this->proposals_model->update($proposal_data, $id);
+                $success = $this->proposals_model->update($data, $id);
                 if ($success) {
+                    $this->proposals_technical_model->update($id, $proposal_data['checked_item_ids']);
                     set_alert('success', _l('updated_successfully', _l('proposal')));
                 }
                 if ($this->set_proposal_pipeline_autoload($id)) {
@@ -321,7 +328,8 @@ class Proposals extends AdminController
             $data['ajaxItems'] = true;
         }
         $data['items_groups'] = $this->invoice_items_model->get_groups();
-
+        $data['technical_items'] = $this->invoice_items_model->get_technical_items_by_field_id("proposal", $id);
+        $data['technical_items_sum'] = $this->invoice_items_model->get_sum_technical_items_by_field_id("proposal", $id);
         $data['statuses']      = $this->proposals_model->get_statuses();
         $data['staff']         = $this->staff_model->get('', ['active' => 1]);
         $data['currencies']    = $this->currencies_model->get();
