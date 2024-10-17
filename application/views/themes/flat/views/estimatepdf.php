@@ -84,6 +84,11 @@ $pdf->Ln(8);
 $tbltotal = '';
 $tbltotal .= '<table cellpadding="6" style="font-size:' . ($font_size + 4) . 'px">';
 $tbltotal .= '
+<tr id="technical_total">
+    <td align="right" width="85%"><strong>' . _l('technical_items_total') . '</strong></td>
+    <td align="right" width="15%">' . app_format_money($estimate->technical_items_total, $estimate->currency_name) . '</td>
+</tr>';
+$tbltotal .= '
 <tr>
     <td align="right" width="85%"><strong>' . _l('estimate_subtotal') . '</strong></td>
     <td align="right" width="15%">' . app_format_money($estimate->subtotal, $estimate->currency_name) . '</td>

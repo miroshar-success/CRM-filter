@@ -604,6 +604,16 @@ $(document).ready(function() {
 
         $('.technical_items_total').text('€' + sum.toFixed(2));
         $('.technical_items_totals').val(sum.toFixed(2));
+
+        var $checkbox = $(this);
+        var technicalItemId = $checkbox.closest('.form-group').find('.technical_item_ids').val();
+        var itemableid = $checkbox.closest('.form-group').find('.itemable_id').val();
+        if ($checkbox.is(':checked')) {
+            $checkbox.closest('.form-group').append('<input type="hidden" name="technical_newitems[]" value="' + technicalItemId + '" class="technical_newitems">');
+        } else {
+            $checkbox.closest('.form-group').find('.technical_newitems').remove();
+            $('#removed_items').append('<input type="hidden" name="technical_removed_items[]" value="' + itemableid + '">');
+        }
     });
 
     $('#proposal-form').on('submit', function(e) { 

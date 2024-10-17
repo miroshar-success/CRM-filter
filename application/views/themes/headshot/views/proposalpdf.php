@@ -16,7 +16,7 @@ $info_left_column .= pdf_logo_url();
 pdf_multi_row($info_left_column, $info_right_column, $pdf, ($dimensions['wk'] / 2) - $dimensions['lm']);
 
 $pdf->ln(10);
-
+$y = $pdf->getY();
 $proposal_info = '<div style="color:#424242;">';
     $proposal_info .= format_organization_info();
 $proposal_info .= '</div>';
@@ -84,7 +84,11 @@ $items_html = preg_replace($pattern, '<td></td>', $items_html);
 
 $items_html .= '';
 $items_html .= '<table cellpadding="6" style="font-size:' . ($font_size + 4) . 'px">';
-
+$items_html .= '
+<tr id="technical_total">
+    <td align="right" width="85%"><strong>' . _l('technical_items_total') . '</strong></td>
+    <td align="right" width="15%">' . app_format_money($proposal->technical_items_total, $proposal->currency_name) . '</td>
+</tr>';
 $items_html .= '
 <tr>
     <td align="right" width="85%"><strong>' . _l('estimate_subtotal') . '</strong></td>
