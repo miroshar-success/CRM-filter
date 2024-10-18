@@ -108,6 +108,7 @@ class Invoices_model extends App_Model
                 $invoice->total_left_to_pay = get_invoice_total_left_to_pay($invoice->id, $invoice->total);
 
                 $invoice->items       = get_items_by_type('invoice', $id, $pdfview);
+                $invoice->technical_items = get_technical_items_by_type('invoice', $id);
                 $invoice->attachments = $this->get_attachments($id);
 
                 if ($invoice->project_id) {

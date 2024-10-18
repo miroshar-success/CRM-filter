@@ -70,6 +70,7 @@ class Estimates_model extends App_Model
                 }
 
                 $estimate->items = get_items_by_type('estimate', $id, $pdfview);
+                $estimate->technical_items = get_technical_items_by_type('estimate', $id);
                 if ($estimate->project_id) {
                     $this->load->model('projects_model');
                     $estimate->project_data = $this->projects_model->get($estimate->project_id);

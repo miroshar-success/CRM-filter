@@ -366,6 +366,7 @@
                             <div class="col-md-5 col-md-offset-7">
                                 <table class="table text-right">
                                     <tbody>
+                                        <?php if(isset($estimate->technical_items) && $estimate->technical_items != null):?>
                                         <tr id="technical_total">
                                             <td>
                                                 <span class="bold tw-text-neutral-700">
@@ -376,6 +377,7 @@
                                                 <?php echo app_format_money($estimate->technical_items_total, $estimate->currency_name); ?>
                                             </td>
                                         </tr>
+                                        <?php endif; ?>
                                         <tr id="subtotal">
                                             <td>
                                                 <span class="bold tw-text-neutral-700">

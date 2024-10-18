@@ -120,16 +120,18 @@
             <div class="col-md-6 col-md-offset-6">
                <table class="table text-right">
                   <tbody>
+                     <?php if(isset($invoice->technical_items) && $invoice->technical_items != null):?>
                      <tr id="technical_total">
                         <td>
-                              <span class="bold tw-text-neutral-700">
+                           <span class="bold tw-text-neutral-700">
                                  <?php echo _l('technical_items_total'); ?>
-                              </span>
+                           </span>
                         </td>
                         <td class="technical_total">
-                              <?php echo app_format_money($invoice->technical_items_total, $invoice->currency_name); ?>
+                           <?php echo app_format_money($invoice->technical_items_total, $invoice->currency_name); ?>
                         </td>
                      </tr>
+                     <?php endif; ?>
                      <tr id="subtotal">
                         <td><span class="bold"><?php echo _l('invoice_subtotal'); ?></span>
                         </td>

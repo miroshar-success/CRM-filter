@@ -562,6 +562,19 @@ function get_items_by_type($type, $id, $is_for_pdf = false)
     return $CI->db->get()->result_array();
 }
 
+function get_technical_items_by_type($type, $id)
+{
+    $CI = &get_instance();
+    $CI->db->select();
+    $CI->db->from(db_prefix() . 'itemable');
+    $CI->db->where('rel_id', $id);
+    $CI->db->where('technical_item', 1);
+    $CI->db->where('rel_type', $type);
+    $CI->db->order_by('item_order', 'asc');
+
+    return $CI->db->get()->result_array();
+}
+
 /**
 * Function that update total tax in sales table eq. invoice, proposal, estimates, credit note
 * @param  mixed $id

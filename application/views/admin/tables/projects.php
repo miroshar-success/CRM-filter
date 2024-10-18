@@ -114,7 +114,9 @@ foreach ($rResult as $aRow) {
     $row[] = _d($aRow['deadline']);
 
     $membersOutput = '<div class="tw-flex -tw-space-x-1">';
-    $members       = explode(',', $aRow['members']);
+    // $members       = explode(',', $aRow['members']); // To pass null is deprecated in newer PHP versions (PHP 8 and above).
+    $members = isset($aRow['members']) && !empty($aRow['members']) ? explode(',', $aRow['members']) : [];
+
     $exportMembers = '';
     foreach ($members as $key => $member) {
         if ($member != '') {

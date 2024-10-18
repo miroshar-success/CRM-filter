@@ -169,17 +169,19 @@ if (isset($invoice->scheduled_email) && $invoice->scheduled_email) { ?>
         <div class="col-md-5 col-md-offset-7">
             <table class="table text-right">
                 <tbody>
-                    <tr id="technical_total">
-                        <td>
-                              <span class="bold tw-text-neutral-700">
-                                 <?php echo _l('technical_items_total'); ?>
-                              </span>
-                        </td>
-                        <td class="technical_total">
-                              <?php echo app_format_money($invoice->technical_items_total, $invoice->currency_name); ?>
-                        </td>
-                     </tr>
-                    <tr id="subtotal">
+                        <?php if(isset($invoice->technical_items) && $invoice->technical_items != null):?>
+                        <tr id="technical_total">
+                            <td>
+                                <span class="bold tw-text-neutral-700">
+                                    <?php echo _l('technical_items_total'); ?>
+                                </span>
+                            </td>
+                            <td class="technical_total">
+                                <?php echo app_format_money($invoice->technical_items_total, $invoice->currency_name); ?>
+                            </td>
+                        </tr>
+                        <?php endif; ?>
+                        <tr id="subtotal">
                         <td>
                             <span class="bold tw-text-neutral-700"><?php echo _l('invoice_subtotal'); ?></span>
                         </td>

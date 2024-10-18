@@ -99,6 +99,13 @@ $pdf->Ln(8);
 
 $tbltotal = '';
 $tbltotal .= '<table cellpadding="6" style="font-size:' . ($font_size + 4) . 'px">';
+if(isset($invoice->technical_items) && $invoice->technical_items != null){
+    $tbltotal .= '
+    <tr id="technical_total">
+        <td align="right" width="85%"><strong>' . _l('technical_items_total') . '</strong></td>
+        <td align="right" width="15%">' . app_format_money($invoice->technical_items_total, $invoice->currency_name) . '</td>
+    </tr>';
+}
 $tbltotal .= '
 <tr>
     <td align="right" width="85%"><strong>' . _l('invoice_subtotal') . '</strong></td>
