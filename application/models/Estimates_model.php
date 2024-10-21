@@ -131,8 +131,11 @@ class Estimates_model extends App_Model
     public function convert_to_invoice($id, $client = false, $draft_invoice = false)
     {
         // Recurring invoice date is okey lets convert it to new invoice
+        $this->load->model('estimates_technical_model');
         $_estimate = $this->get($id);
-
+        if($id != 0) {
+            $technical_items_ids = $this->estimates_technical_model->get_item($id);
+        }
         $new_invoice_data = [];
         if ($draft_invoice == true) {
             $new_invoice_data['save_as_draft'] = true;
@@ -165,6 +168,8 @@ class Estimates_model extends App_Model
         $new_invoice_data['shipping_state']   = $_estimate->shipping_state;
         $new_invoice_data['shipping_zip']     = $_estimate->shipping_zip;
         $new_invoice_data['shipping_country'] = $_estimate->shipping_country;
+        $new_invoice_data['technical_items_total'] = $_estimate->technical_items_total;
+        $new_invoice_data['technical_newitems'] = $technical_items_ids;
 
         if ($_estimate->include_shipping == 1) {
             $new_invoice_data['include_shipping'] = 1;
