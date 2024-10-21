@@ -293,7 +293,20 @@ class Invoice_items_model extends App_Model
 
         $this->db->where('id', $itemid);
         $this->db->update('items', $data);
-
+       
+        
+        if ($data['technical_invoice_item'] == 0) {
+            // Ensure $itemid is defined
+            if (isset($itemid)) {
+                // Delete the record where item_id matches $itemid
+                $this->db->where('item_id', $itemid);
+                $this->db->delete('tblitemable');
+            } else {
+                // Handle the case where $itemid is not set
+                var_dump('Item ID is not set!');
+            }
+        }
+        
         if ($this->db->affected_rows() > 0) {
             $updated = true;
         }
