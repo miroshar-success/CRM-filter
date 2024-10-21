@@ -58,7 +58,13 @@ $items_html = $items->table();
 $items_html .= '<br /><br />';
 $items_html .= '';
 $items_html .= '<table cellpadding="6" style="font-size:' . ($font_size + 4) . 'px">';
-
+if(isset($proposal->technical_items) && $proposal->technical_items != null){
+    $items_html .= '
+    <tr id="technical_total">
+        <td align="right" width="85%"><strong>' . _l('technical_items_total') . '</strong></td>
+        <td align="right" width="15%">' . app_format_money($proposal->technical_items_total, $proposal->currency_name) . '</td>
+    </tr>';
+}
 $items_html .= '
 <tr>
     <td align="right" width="85%"><strong>' . _l('estimate_subtotal') . '</strong></td>

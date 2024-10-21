@@ -436,6 +436,7 @@ class Proposals_model extends App_Model
             if ($proposal) {
                 $proposal->attachments                           = $this->get_attachments($id);
                 $proposal->items                                 = get_items_by_type('proposal', $id, $pdfview);
+                $proposal->technical_items                       = get_technical_items_by_type('proposal', $id);
                 $proposal->visible_attachments_to_customer_found = false;
                 foreach ($proposal->attachments as $attachment) {
                     if ($attachment['visible_to_customer'] == 1) {

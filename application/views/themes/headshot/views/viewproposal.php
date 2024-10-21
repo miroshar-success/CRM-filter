@@ -12,6 +12,7 @@
         <div class="col-md-6 col-md-offset-6">
             <table class="table text-right">
                 <tbody>
+                    <?php if(isset($proposal->technical_items) && $proposal->technical_items != null):?>
                     <tr id="technical_total">
                         <td>
                             <span class="bold tw-text-neutral-700">
@@ -22,6 +23,7 @@
                             <?php echo app_format_money($proposal->technical_items_total, $proposal->currency_name); ?>
                         </td>
                     </tr>
+                    <?php endif; ?>
                     <tr id="subtotal">
                         <td>
                             <span class="bold tw-text-neutral-700">
