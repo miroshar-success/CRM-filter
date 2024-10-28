@@ -60,6 +60,35 @@
     <?php } ?>
     // Trigger item select width fix
     $('#convert_to_invoice').on('shown.bs.modal', function(){
-        $('#item_select').trigger('change')
-    })
+        $('#item_select').trigger('change');
+    });
+
+    var currency = "<?php echo $proposal->currency_symbol?>";
+    let sum = 0;
+
+    $('.technical_items_area .technical_invoice_item_check:checked').each(function() {
+        sum += parseFloat($(this).val()) || 0;
+    });
+
+    $('.technical_items_total').text(currency + sum.toFixed(2));
+    $('.technical_items_totals').val(sum.toFixed(2));
+    $('.technical_invoice_item_check').on('change', function() {
+        let sum = 0;
+
+        $('.technical_items_area .technical_invoice_item_check:checked').each(function() {
+            sum += parseFloat($(this).val()) || 0;
+        });
+
+        $('.technical_items_total').text(currency + sum.toFixed(2));
+        $('.technical_items_totals').val(sum.toFixed(2));
+    });
+
+    $('#proposal_convert_to_invoice_form').on('submit', function(e) { 
+        let checkedIds = [];
+        $('.technical_invoice_item_check:checked').each(function() {
+            let itemId = $(this).closest('.form-group').find('.technical_item_ids').val();
+            checkedIds.push(itemId);
+        });
+        $('#checked_item_ids').val(checkedIds.join(','));
+    });
 </script>

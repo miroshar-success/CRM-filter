@@ -33,9 +33,14 @@ $(document).ready(function() {
         var newValue = $(this).val(); // Get the value of .qq
         $('#custom_fields\\[estimate\\]\\[25\\]').val(newValue);
     });
-    var sum_technical_items = "€<?php echo $technical_items_sum; ?>";
-    $('.technical_items_total').text(sum_technical_items);
-    $('.technical_items_totals').val(sum_technical_items);
+    let sum = 0;
+
+    $('.technical_items_area .technical_invoice_item_check:checked').each(function() {
+        sum += parseFloat($(this).val()) || 0;
+    });
+
+    $('.technical_items_total').text('€' + sum.toFixed(2));
+    $('.technical_items_totals').val(sum.toFixed(2));
     $('.technical_invoice_item_check').on('change', function() {
         let sum = 0;
 

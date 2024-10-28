@@ -419,7 +419,6 @@ class Invoices extends AdminController
                 if (!has_permission('invoices', '', 'create')) {
                     access_denied('invoices');
                 }
-                $id = $this->invoices_model->add($data);
                 if (hooks()->apply_filters('validate_invoice_number', true)) {
                     $number = ltrim($invoice_data['number'], '0');
                     if (total_rows('invoices', [

@@ -479,8 +479,10 @@ class Estimates_model extends App_Model
      * @param array $data invoiec data
      * @return mixed - false if not insert, estimate ID if succes
      */
-    public function add($data)
+    public function add($data, $convert=false)
     {
+        unset($data['technical_invoice_item']);
+        unset($data['technical_item_ids']);
         unset($data['technical_removed_items']);
         unset($data['itemable_id']);
         $data['datecreated'] = date('Y-m-d H:i:s');
@@ -513,7 +515,12 @@ class Estimates_model extends App_Model
             $this->db->where_in('id', $data['technical_newitems']);
             $technical_items = $this->db->get('tblitems')->result_array();
         }
-
+        if($convert == true && $data['checked_item_ids'] != null) {
+            $checked_item_ids_array = explode(',', $data['checked_item_ids']);
+            $this->db->select('id, description, long_description, rate, unit');
+            $this->db->where_in('id', $checked_item_ids_array);
+            $technical_items = $this->db->get('tblitems')->result_array();
+        }
         $items = [];
 
         if (isset($data['newitems'])) {
@@ -538,6 +545,7 @@ class Estimates_model extends App_Model
             $items = $data['newitems'];
             unset($data['technical_newitems']);
             unset($data['newitems']);
+            unset($data['checked_item_ids']);
         }
 
         $data = $this->map_shipping_columns($data);

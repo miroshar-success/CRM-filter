@@ -482,10 +482,13 @@ class Proposals extends AdminController
         if (!has_permission('estimates', '', 'create')) {
             access_denied('estimates');
         }
-        if ($this->input->post()) {
+        $data =  $this->input->post();
+        if ($data) {
             $this->load->model('estimates_model');
-            $estimate_id = $this->estimates_model->add($this->input->post());
+            $this->load->model('estimates_technical_model');
+            $estimate_id = $this->estimates_model->add($data, true);
             if ($estimate_id) {
+                $this->estimates_technical_model->add($estimate_id, $data['checked_item_ids']);
                 set_alert('success', _l('proposal_converted_to_estimate_success'));
                 $this->db->where('id', $id);
                 $this->db->update(db_prefix() . 'proposals', [
@@ -513,10 +516,13 @@ class Proposals extends AdminController
         if (!has_permission('invoices', '', 'create')) {
             access_denied('invoices');
         }
-        if ($this->input->post()) {
+        $data =  $this->input->post();
+        if ($data) {
             $this->load->model('invoices_model');
-            $invoice_id = $this->invoices_model->add($this->input->post());
+            $this->load->model('invoices_technical_model');
+            $invoice_id = $this->invoices_model->add($data, false, true);
             if ($invoice_id) {
+                $this->invoices_technical_model->add($invoice_id, $data['checked_item_ids']);
                 set_alert('success', _l('proposal_converted_to_invoice_success'));
                 $this->db->where('id', $id);
                 $this->db->update(db_prefix() . 'proposals', [
@@ -562,6 +568,9 @@ class Proposals extends AdminController
         $data['billable_tasks'] = [];
         $data['add_items']      = $this->_parse_items($data['proposal']);
 
+        $data['technical_items'] = $this->invoice_items_model->get_technical_items_by_field_id("proposal", $id);
+        $data['technical_items_sum'] = $this->invoice_items_model->get_sum_technical_items_by_field_id("proposal", $id);
+        
         if ($data['proposal']->rel_type == 'lead') {
             $this->db->where('leadid', $data['proposal']->rel_id);
             $data['customer_id'] = $this->db->get(db_prefix() . 'clients')->row()->userid;
@@ -605,7 +614,8 @@ class Proposals extends AdminController
             $data['customer_id'] = $data['proposal']->rel_id;
             $data['project_id'] = $data['proposal']->project_id;
         }
-
+        $data['technical_items'] = $this->invoice_items_model->get_technical_items_by_field_id("proposal", $id);
+        $data['technical_items_sum'] = $this->invoice_items_model->get_sum_technical_items_by_field_id("proposal", $id);
         $data['custom_fields_rel_transfer'] = [
             'belongs_to' => 'proposal',
             'rel_id'     => $id,

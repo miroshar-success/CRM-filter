@@ -426,7 +426,7 @@ class Proposals_model extends App_Model
             $this->db->where('status !=', 0);
         }
 
-        $this->db->select('*,' . db_prefix() . 'currencies.id as currencyid, ' . db_prefix() . 'proposals.id as id, ' . db_prefix() . 'currencies.name as currency_name');
+        $this->db->select('*,' . db_prefix() . 'currencies.id as currencyid, ' . db_prefix() . 'proposals.id as id, ' . db_prefix() . 'currencies.name as currency_name, ' . db_prefix() . 'currencies.symbol as currency_symbol');
         $this->db->from(db_prefix() . 'proposals');
         $this->db->join(db_prefix() . 'currencies', db_prefix() . 'currencies.id = ' . db_prefix() . 'proposals.currency', 'left');
 
