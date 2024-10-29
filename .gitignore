@@ -9,3 +9,4 @@ application/vendor/*
 uploads/*
 modules/helpers/*
 modules/twilio-web/*
+node_modules
