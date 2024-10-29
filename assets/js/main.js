@@ -8068,7 +8068,7 @@ function validate_invoice_form(selector) {
             return $('input[name="number"]').data("original-number");
           },
           date: function () {
-            return $('input[name="date"]').val();
+            return $('input[name="date"]', selector).val();
           },
         },
       },

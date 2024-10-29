@@ -57,5 +57,26 @@ class Estimates_technical_model extends App_Model
         // Step 2: Add new items
         return $this->add($estimate_id, $checked_item_ids);
     }
+
+    public function get_item($estimate_id)
+    {
+        // Step 1: Specify the table
+        $this->db->select('item'); // Select only the item_id column
+        $this->db->from('tblestimate_technicals'); // Specify the table
+        $this->db->where('estimate', $estimate_id); // Filter by estimate ID
+        
+        // Step 2: Execute the query and get the result
+        $query = $this->db->get();
+    
+        // Step 3: Check if records were found
+        if ($query->num_rows() > 0) {
+            // Return an array of item IDs
+            return array_column($query->result_array(), 'item');
+        } else {
+            // Return an empty array if no records are found
+            return [];
+        }
+    }
+    
 }
 
