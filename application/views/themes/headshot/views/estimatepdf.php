@@ -181,8 +181,38 @@ $items = get_items_table_data($estimate_for_tech, 'estimate', 'pdf');
 
 $tbltotal = $items->table();
 
+// Load the HTML into a DOMDocument
+$dom = new DOMDocument();
+libxml_use_internal_errors(true); // Ignore parsing errors
+$dom->loadHTML($tbltotal);
+libxml_clear_errors();
+// Replace content of the 3rd and 5th columns in <thead> with empty value
+$thead = $dom->getElementsByTagName('thead')->item(0);
+if ($thead) {
+    $headerRow = $thead->getElementsByTagName('tr')->item(0);
+    if ($headerRow) {
+        $thCells = $headerRow->getElementsByTagName('th');
+        if ($thCells->length >= 5) {
+            $thCells->item(2)->nodeValue = ''; // Clear 3rd <th>
+            $thCells->item(4)->nodeValue = ''; // Clear 5th <th>
+        }
+    }
+}
+
+// Replace content of the 3rd and 5th <td> in each <tr> of <tbody> with empty value
+$tbody = $dom->getElementsByTagName('tbody')->item(0);
+if ($tbody) {
+    foreach ($tbody->getElementsByTagName('tr') as $row) {
+        $tdCells = $row->getElementsByTagName('td');
+        if ($tdCells->length >= 5) {
+            $tdCells->item(2)->nodeValue = ''; // Clear 3rd <td>
+            $tdCells->item(4)->nodeValue = ''; // Clear 5th <td>
+        }
+    }
+}
 // Regular expression to match quantity cells with value 0 within TCPDF cell tags
 $pattern = '/<td[^>]*>(0)<\/td>/i';  // Case-insensitive matching
+$tbltotal = $dom->saveHTML();
 
 // Replace matched cells with empty cells
 $tbltotal = preg_replace($pattern, '<td></td>', $tbltotal);
