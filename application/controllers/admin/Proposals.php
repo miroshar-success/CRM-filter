@@ -306,13 +306,13 @@ class Proposals extends AdminController
         if ($id == '') {
             $title = _l('add_new', _l('proposal_lowercase'));
         } else {
-            $data['proposal'] = $this->proposals_model->get($id);
+            $proposal = $this->proposals_model->get($id);
 
-            if (!$data['proposal'] || !user_can_view_proposal($id)) {
+            if (!$proposal || !user_can_view_proposal($id)) {
                 blank_page(_l('proposal_not_found'));
             }
 
-            $data['estimate']    = $data['proposal'];
+            $data['proposal']    = $proposal;
             $data['is_proposal'] = true;
             $title               = _l('edit', _l('proposal_lowercase'));
         }
@@ -394,7 +394,7 @@ class Proposals extends AdminController
             }
         }
 
-        $proposal = $this->proposals_model->get($id);
+        $proposal = $this->proposals_model->get($id, [], false, true);
 
         try {
             $pdf = proposal_pdf($proposal);

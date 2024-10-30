@@ -66,13 +66,17 @@ $pdf->Cell(0, 1, _l(''), 0, 0, 'L', 0, '', 0);
 $pdf->writeHTML('<br pagebreak="true"/>');
 $info_right_column .= '';
 $info_right_column .= '';
-
+$proposal_for_tech = unserialize(serialize($proposal));
 // Write top left logo and right column info/text
 pdf_multi_row($info_left_column, $info_right_column, $pdf, ($dimensions['wk'] / 2) - $dimensions['lm']);
 
 // The items table
+$filtered_items_non_technical = array_filter($proposal->items, function($item) {
+    return $item['technical_item'] != 1;
+});
+$proposal->items = $filtered_items_non_technical;
 $items = get_items_table_data($proposal, 'proposal', 'pdf')
-        ->set_headings('estimate');
+->set_headings('estimate');
 
 $items_html = $items->table();
 
@@ -84,14 +88,6 @@ $items_html = preg_replace($pattern, '<td></td>', $items_html);
 
 $items_html .= '';
 $items_html .= '<table cellpadding="6" style="font-size:' . ($font_size + 4) . 'px">';
-if(isset($proposal->technical_items) && $proposal->technical_items != null){
-    $items_html .= '
-    <tr id="technical_total">
-        <td align="right" width="85%"><strong>' . _l('technical_items_total') . '</strong></td>
-        <td align="right" width="15%">' . app_format_money($proposal->technical_items_total, $proposal->currency_name) . '</td>
-    </tr>';
-}
-
 $items_html .= '
 <tr>
     <td align="right" width="85%"><strong>' . _l('estimate_subtotal') . '</strong></td>
@@ -140,6 +136,64 @@ $open_till
 $project
 <div style="width:675px !important;">
 $proposal->content
+</div>
+EOF;
+
+$pdf->writeHTML($html, true, false, true, false, '');
+
+
+
+// PAGE BREAK
+$pdf->writeHTML('<br pagebreak="true"/>');
+$info_right_column .= '';
+$info_right_column .= '';
+
+// Write top left logo and right column info/text
+pdf_multi_row($info_left_column, $info_right_column, $pdf, ($dimensions['wk'] / 2) - $dimensions['lm']);
+
+// The items table
+$filtered_items_technical = array_filter($proposal_for_tech->items, function($item) {
+    return $item['technical_item'] == 1;
+});
+
+$proposal_for_tech->items = $filtered_items_technical;
+$items = get_items_table_data($proposal_for_tech, 'proposal', 'pdf')
+->set_headings('estimate');
+
+$tech_items_html = $items->table();
+
+// Regular expression to match quantity cells with value 0 within TCPDF cell tags
+$pattern = '/<td[^>]*>(0)<\/td>/i';  // Case-insensitive matching
+
+// Replace matched cells with empty cells
+$tech_items_html = preg_replace($pattern, '<td></td>', $tech_items_html);
+
+$tech_items_html .= '';
+$tech_items_html .= '<table cellpadding="6" style="font-size:' . ($font_size + 4) . 'px">';
+if(isset($proposal_for_tech->technical_items) && $proposal_for_tech->technical_items != null){
+    $tech_items_html .= '
+    <tr id="technical_total">
+        <td align="right" width="85%"><strong>' . _l('technical_items_total') . '</strong></td>
+        <td align="right" width="15%">' . app_format_money($proposal_for_tech->technical_items_total, $proposal_for_tech->currency_name) . '</td>
+    </tr>';
+}
+
+$tech_items_html .= '</table>';
+
+if (get_option('total_to_words_enabled') == 1) {
+    $tech_items_html .= '<br /><br /><br />';
+    $tech_items_html .= '<strong style="text-align:center;">' . _l('num_word') . ': ' . $CI->numberword->convert($proposal_for_tech->total, $proposal_for_tech->currency_name) . '</strong>';
+}
+
+// Get the proposals css
+// Theese lines should aways at the end of the document left side. Dont indent these lines
+$html = <<<EOF
+$proposal_date
+<br />
+$open_till
+$project
+<div style="width:675px !important;">
+$tech_items_html
 </div>
 EOF;
 

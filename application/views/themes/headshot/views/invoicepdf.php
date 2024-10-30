@@ -97,7 +97,7 @@ $pdf->Cell(0, 1, _l(''), 0, 0, 'L', 0, '', 0);
 $pdf->writeHTML('<br pagebreak="true"/>');
 $info_right_column .= '';
 $info_right_column .= '';
-
+$invoice_for_tech = unserialize(serialize($invoice));
 if (get_option('show_status_on_pdf_ei') == 1) {
     $info_right_column .= '<br /><span style="color:rgb(' . invoice_status_color_pdf($status) . ');text-transform:uppercase;">' . format_invoice_status($status, '', false) . '</span>';
 }
@@ -114,6 +114,10 @@ pdf_multi_row($info_left_column, $info_right_column, $pdf, ($dimensions['wk'] / 
 $pdf->Ln(hooks()->apply_filters('pdf_info_and_table_separator', 6));
 
 // The items table
+$filtered_items_non_technical = array_filter($invoice->items, function($item) {
+    return $item['technical_item'] != 1;
+});
+$invoice->items = $filtered_items_non_technical;
 $items = get_items_table_data($invoice, 'invoice', 'pdf');
 
 $tblhtml = $items->table();
@@ -130,13 +134,6 @@ $pdf->Ln(8);
 
 $tbltotal = '';
 $tbltotal .= '<table cellpadding="6" style="font-size:' . ($font_size + 4) . 'px">';
-if(isset($invoice->technical_items) && $invoice->technical_items != null){
-    $tbltotal .= '
-    <tr id="technical_total">
-        <td align="right" width="85%"><strong>' . _l('technical_items_total') . '</strong></td>
-        <td align="right" width="15%">' . app_format_money($invoice->technical_items_total, $invoice->currency_name) . '</td>
-    </tr>';
-}
 $tbltotal .= '
 <tr>
     <td align="right" width="85%"><strong>' . _l('invoice_subtotal') . '</strong></td>
@@ -206,6 +203,60 @@ if (get_option('show_amount_due_on_invoice') == 1 && $invoice->status != Invoice
 
 $tbltotal .= '</table>';
 $pdf->writeHTML($tbltotal, true, false, false, false, '');
+
+
+
+// PAGE BREAK
+$pdf->writeHTML('<br pagebreak="true"/>');
+$info_right_column .= '';
+$info_right_column .= '';
+if (get_option('show_status_on_pdf_ei') == 1) {
+    $info_right_column .= '<br /><span style="color:rgb(' . invoice_status_color_pdf($status) . ');text-transform:uppercase;">' . format_invoice_status($status, '', false) . '</span>';
+}
+
+if ($status != Invoices_model::STATUS_PAID && $status != Invoices_model::STATUS_CANCELLED && get_option('show_pay_link_to_invoice_pdf') == 1
+    && found_invoice_mode($payment_modes, $invoice->id, false)) {
+    $info_right_column .= ' - <a style="color:#84c529;text-decoration:none;text-transform:uppercase;" href="' . site_url('invoice/' . $invoice->id . '/' . $invoice->hash) . '"><1b>' . _l('view_invoice_pdf_link_pay') . '</1b></a>';
+}
+
+// Write top left logo and right column info/text
+pdf_multi_row($info_left_column, $info_right_column, $pdf, ($dimensions['wk'] / 2) - $dimensions['lm']);
+
+// The Table
+$pdf->Ln(hooks()->apply_filters('pdf_info_and_table_separator', 6));
+
+// The items table
+$filtered_items_technical = array_filter($invoice_for_tech->items, function($item) {
+    return $item['technical_item'] == 1;
+});
+$invoice_for_tech->items = $filtered_items_technical;
+$items = get_items_table_data($invoice_for_tech, 'invoice', 'pdf');
+
+$tblhtml = $items->table();
+
+// Regular expression to match quantity cells with value 0 within TCPDF cell tags
+$pattern = '/<td[^>]*>(0)<\/td>/i';  // Case-insensitive matching
+
+// Replace matched cells with empty cells
+$tblhtml = preg_replace($pattern, '<td></td>', $tblhtml);
+
+$pdf->writeHTML($tblhtml, true, false, false, false, '');
+
+$pdf->Ln(8);
+
+$tbltotal = '';
+$tbltotal .= '<table cellpadding="6" style="font-size:' . ($font_size + 4) . 'px">';
+if(isset($invoice_for_tech->technical_items) && $invoice_for_tech->technical_items != null){
+    $tbltotal .= '
+    <tr id="technical_total">
+        <td align="right" width="85%"><strong>' . _l('technical_items_total') . '</strong></td>
+        <td align="right" width="15%">' . app_format_money($invoice_for_tech->technical_items_total, $invoice_for_tech->currency_name) . '</td>
+    </tr>';
+}
+
+$tbltotal .= '</table>';
+$pdf->writeHTML($tbltotal, true, false, false, false, '');
+
 
 if (get_option('total_to_words_enabled') == 1) {
     // Set the font bold
